@@ -10,6 +10,7 @@ import {
   Avatar,
 } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
+import Link from 'next/link';
 import { DarkModeToggle } from './components/DarkModeToggle';
 import { LogoutButton } from './components/LogoutButton';
 import { EmptyState } from './components/EmptyState';
@@ -84,7 +85,7 @@ export default function HomePage() {
               <Chip
                 label="Add grandkids first"
                 variant="outlined"
-                component="a"
+                component={Link}
                 href="/grandkids/"
                 clickable
               />
