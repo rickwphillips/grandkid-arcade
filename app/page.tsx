@@ -18,7 +18,7 @@ import { useAuth } from './components/AuthGuard';
 import { EmptyState } from './components/EmptyState';
 import { GameCard } from './components/GameCard';
 import { useGrandkid } from './lib/useGrandkid';
-import { games, getGamesForAge } from './lib/gameRegistry';
+import { games } from './lib/gameRegistry';
 import { APP_VERSION } from './lib/version';
 import styles from './page.module.scss';
 
@@ -32,8 +32,7 @@ export default function HomePage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Filter games by selected grandkid's age (or show all)
-  const visibleGames = selected ? getGamesForAge(selected.age) : games;
+  const visibleGames = games;
 
   return (
     <>
