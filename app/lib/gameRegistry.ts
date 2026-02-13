@@ -27,6 +27,14 @@ export const games: GameDefinition[] = [
     ageRange: [5, 18],
     category: 'puzzle',
   },
+  {
+    slug: 'connect-4',
+    title: 'Connect 4',
+    description: 'Drop pieces to connect four in a row! Play against the computer or a friend.',
+    emoji: '🔴',
+    ageRange: [4, 18],
+    category: 'puzzle',
+  },
 ];
 
 export function getGame(slug: string): GameDefinition | undefined {

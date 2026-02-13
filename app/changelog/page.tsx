@@ -18,6 +18,18 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.1.0',
+    date: '2026-02-13',
+    title: 'Connect 4 & Image Cards',
+    changes: [
+      { icon: '🔴', text: 'Added Connect 4 — play against the computer or a friend' },
+      { icon: '🤖', text: 'Simple AI opponent that blocks wins and plays strategically' },
+      { icon: '🎯', text: 'Realistic piece drop animation with board mask effect' },
+      { icon: '🖼️', text: 'Color Match now uses uploaded puzzle images as card faces' },
+      { icon: '🃏', text: 'Remaining card pairs filled with emoji fallbacks' },
+    ],
+  },
+  {
     version: '1.0.0',
     date: '2026-02-13',
     title: 'Love Messages & Color Match',
