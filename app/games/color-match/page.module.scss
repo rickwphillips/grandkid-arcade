@@ -25,7 +25,23 @@
   z-index: 1;
 }
 
-.grid {
+.difficultyRow {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.grid4 {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;

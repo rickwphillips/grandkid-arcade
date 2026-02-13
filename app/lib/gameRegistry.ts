@@ -13,10 +13,10 @@ export interface GameDefinition {
 export const games: GameDefinition[] = [
   {
     slug: 'color-match',
-    title: 'Color Match',
-    description: 'Flip cards and find matching pairs! Train your memory with colorful emojis.',
-    emoji: '🃏',
-    ageRange: [3, 8],
+    title: 'Picture Matcher',
+    description: 'Flip cards and find matching pairs! Match pictures and emojis at three difficulty levels.',
+    emoji: '🖼️',
+    ageRange: [3, 18],
     category: 'puzzle',
   },
   {

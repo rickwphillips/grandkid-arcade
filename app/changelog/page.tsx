@@ -18,6 +18,17 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.2.0',
+    date: '2026-02-13',
+    title: 'Picture Matcher & Difficulty',
+    changes: [
+      { icon: '🖼️', text: 'Renamed Color Match to Picture Matcher' },
+      { icon: '🎚️', text: 'Three difficulty levels: Easy (6 pairs), Medium (8 pairs), Hard (12 pairs)' },
+      { icon: '🃏', text: 'Difficulty select screen before each game with New Game button' },
+      { icon: '👶', text: 'Age range expanded to 3-18 for all skill levels' },
+    ],
+  },
+  {
     version: '1.1.0',
     date: '2026-02-13',
     title: 'Connect 4 & Image Cards',
