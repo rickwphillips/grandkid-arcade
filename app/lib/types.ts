@@ -52,3 +52,14 @@ export interface ToggleFavoriteInput {
   grandkid_id: number;
   game_slug: string;
 }
+
+// Puzzle images
+export interface PuzzleImage {
+  id: number;
+  title: string;
+  created_at: string;
+}
+
+export interface PuzzleImageWithData extends PuzzleImage {
+  image_data: string;
+}

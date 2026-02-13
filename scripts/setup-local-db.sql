@@ -36,6 +36,13 @@ CREATE TABLE IF NOT EXISTS favorites (
     UNIQUE KEY uq_grandkid_game (grandkid_id, game_slug)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS puzzle_images (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    image_data MEDIUMTEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Create app_user if it doesn't exist, then grant access
 CREATE USER IF NOT EXISTS 'app_user'@'localhost' IDENTIFIED BY 'devpassword';
 GRANT ALL PRIVILEGES ON grandkid_arcade.* TO 'app_user'@'localhost';

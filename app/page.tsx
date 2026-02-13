@@ -10,9 +10,11 @@ import {
   Avatar,
 } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
+import SettingsIcon from '@mui/icons-material/Settings';
 import Link from 'next/link';
 import { DarkModeToggle } from './components/DarkModeToggle';
 import { LogoutButton } from './components/LogoutButton';
+import { useAuth } from './components/AuthGuard';
 import { EmptyState } from './components/EmptyState';
 import { GameCard } from './components/GameCard';
 import { useGrandkid } from './lib/useGrandkid';
@@ -21,6 +23,7 @@ import styles from './page.module.scss';
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false);
+  const { user } = useAuth();
   const { grandkids, selected, selectGrandkid, loading } = useGrandkid();
 
   useEffect(() => {
@@ -88,6 +91,17 @@ export default function HomePage() {
                 component={Link}
                 href="/grandkids/"
                 clickable
+              />
+            )}
+            {user?.role === 'admin' && (
+              <Chip
+                icon={<SettingsIcon />}
+                label="Admin"
+                variant="outlined"
+                component={Link}
+                href="/admin/puzzle-images/"
+                clickable
+                sx={{ ml: 'auto' }}
               />
             )}
           </Box>

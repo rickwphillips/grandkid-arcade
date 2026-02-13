@@ -6,6 +6,8 @@ import type {
   SubmitScoreInput,
   Favorite,
   ToggleFavoriteInput,
+  PuzzleImage,
+  PuzzleImageWithData,
 } from './types';
 
 // API base URL — environment-aware
@@ -114,4 +116,15 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+
+  // Puzzle images
+  getPuzzleImages: () => apiFetch<PuzzleImage[]>('/puzzle-images'),
+  getPuzzleImage: (id: number) => apiFetch<PuzzleImageWithData>(`/puzzle-images?id=${id}`),
+  createPuzzleImage: (data: { title: string; image_data: string }) =>
+    apiFetch<PuzzleImage>('/puzzle-images', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  deletePuzzleImage: (id: number) =>
+    apiFetch<{ success: boolean }>(`/puzzle-images?id=${id}`, { method: 'DELETE' }),
 };

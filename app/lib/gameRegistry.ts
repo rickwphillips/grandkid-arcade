@@ -19,6 +19,14 @@ export const games: GameDefinition[] = [
     ageRange: [3, 8],
     category: 'puzzle',
   },
+  {
+    slug: 'slide-puzzle',
+    title: 'Slide Puzzle',
+    description: 'Slide the tiles to put the picture back together! A classic brain teaser.',
+    emoji: '🧩',
+    ageRange: [5, 18],
+    category: 'puzzle',
+  },
 ];
 
 export function getGame(slug: string): GameDefinition | undefined {
