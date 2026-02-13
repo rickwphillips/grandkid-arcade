@@ -40,13 +40,16 @@ export async function apiFetch<T>(
   endpoint: string,
   options?: RequestInit
 ): Promise<T> {
+  // Strip leading slash to avoid double-slash with API_BASE
+  const clean = endpoint.replace(/^\//, '');
+
   // Handle query strings properly — insert .php before the query string
   let url: string;
-  if (endpoint.includes('?')) {
-    const [path, query] = endpoint.split('?');
+  if (clean.includes('?')) {
+    const [path, query] = clean.split('?');
     url = `${API_BASE}${path}.php?${query}`;
   } else {
-    url = `${API_BASE}${endpoint}.php`;
+    url = `${API_BASE}${clean}.php`;
   }
 
   const res = await fetch(url, {
