@@ -5,6 +5,7 @@ import { Box, Typography, Button } from '@mui/material';
 import ReplayIcon from '@mui/icons-material/Replay';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { PageContainer } from '@/app/components/PageContainer';
+import { FloatingLoveMessages } from '@/app/components/FloatingLoveMessages';
 import { useThemeMode } from '@/app/components/ThemeProvider';
 import { useGrandkid } from '@/app/lib/useGrandkid';
 import { api } from '@/app/lib/api';
@@ -121,6 +122,10 @@ export default function ColorMatchPage() {
 
   return (
     <PageContainer title="Color Match" subtitle="Find all the matching pairs!">
+      <Box sx={{ position: 'relative' }}>
+      {selected && (
+        <FloatingLoveMessages name={selected.name} active={!gameOver} />
+      )}
       <Box className={`${styles.gameArea} ${mode === 'dark' ? styles.gameAreaDark : ''}`}>
       {/* Move counter */}
       <Box sx={{ textAlign: 'center', mb: 2 }}>
@@ -160,6 +165,7 @@ export default function ColorMatchPage() {
         })}
       </Box>
 
+      </Box>
       </Box>
 
       {/* Win screen */}

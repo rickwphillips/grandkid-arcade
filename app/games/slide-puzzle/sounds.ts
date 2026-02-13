@@ -20,24 +20,10 @@ function tone(freq: number, duration: number, type: OscillatorType = 'sine', sta
   osc.stop(ac.currentTime + startTime + duration);
 }
 
-/** Short pop/click when a card is tapped */
-export function playFlip() {
+/** Short click when a tile slides */
+export function playSlide() {
   if (isMuted()) return;
-  tone(600, 0.1, 'triangle');
-}
-
-/** Happy ascending two-note chime on match */
-export function playMatch() {
-  if (isMuted()) return;
-  tone(523, 0.15, 'sine');        // C5
-  tone(784, 0.25, 'sine', 0.12); // G5
-}
-
-/** Gentle descending boop on mismatch */
-export function playMismatch() {
-  if (isMuted()) return;
-  tone(400, 0.15, 'sine');
-  tone(300, 0.2, 'sine', 0.12);
+  tone(440, 0.08, 'triangle');
 }
 
 /** Celebratory ascending scale on win */

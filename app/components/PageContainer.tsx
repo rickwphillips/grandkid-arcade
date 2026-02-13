@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useEffect, useState, ReactNode } from 'react';
 import { DarkModeToggle } from './DarkModeToggle';
 import { LogoutButton } from './LogoutButton';
+import { MuteToggle } from './MuteToggle';
 
 interface PageContainerProps {
   title: string;
@@ -34,6 +35,7 @@ export function PageContainer({
   return (
     <>
       <LogoutButton />
+      <MuteToggle />
       <DarkModeToggle />
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Button

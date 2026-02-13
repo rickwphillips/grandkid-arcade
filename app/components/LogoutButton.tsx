@@ -18,7 +18,7 @@ export function LogoutButton() {
         sx={{
           position: 'fixed',
           top: 24,
-          right: 72,
+          right: 120,
           zIndex: 1000,
           backgroundColor: 'background.paper',
           boxShadow: 2,

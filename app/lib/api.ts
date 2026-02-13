@@ -8,6 +8,7 @@ import type {
   ToggleFavoriteInput,
   PuzzleImage,
   PuzzleImageWithData,
+  LoveMessage,
 } from './types';
 
 // API base URL — environment-aware
@@ -127,4 +128,8 @@ export const api = {
     }),
   deletePuzzleImage: (id: number) =>
     apiFetch<{ success: boolean }>(`/puzzle-images?id=${id}`, { method: 'DELETE' }),
+
+  // Love messages
+  getLoveMessages: (name?: string) =>
+    apiFetch<LoveMessage[]>(name ? `/love-messages?name=${encodeURIComponent(name)}` : '/love-messages'),
 };

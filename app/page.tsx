@@ -19,6 +19,7 @@ import { EmptyState } from './components/EmptyState';
 import { GameCard } from './components/GameCard';
 import { useGrandkid } from './lib/useGrandkid';
 import { games, getGamesForAge } from './lib/gameRegistry';
+import { APP_VERSION } from './lib/version';
 import styles from './page.module.scss';
 
 export default function HomePage() {
@@ -123,6 +124,24 @@ export default function HomePage() {
                 description="Games will appear here as they're added. Check back soon!"
               />
             )}
+          </Box>
+        </Fade>
+
+        {/* Version footer */}
+        <Fade in={mounted} timeout={1400}>
+          <Box sx={{ textAlign: 'center', py: 4, mt: 2 }}>
+            <Typography
+              variant="caption"
+              component={Link}
+              href="/changelog/"
+              sx={{
+                color: 'text.disabled',
+                textDecoration: 'none',
+                '&:hover': { color: 'text.secondary', textDecoration: 'underline' },
+              }}
+            >
+              v{APP_VERSION}
+            </Typography>
           </Box>
         </Fade>
       </Container>

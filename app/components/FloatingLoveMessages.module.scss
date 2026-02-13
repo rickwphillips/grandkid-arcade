@@ -1,0 +1,132 @@
+.container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.message {
+  position: absolute;
+  max-width: 190px;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  background: linear-gradient(
+    135deg,
+    #d2691e 0%,
+    #daa520 40%,
+    #f5d77a 50%,
+    #daa520 60%,
+    #b8860b 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 2px rgba(139, 69, 19, 0.3))
+          drop-shadow(0 0 8px rgba(218, 165, 32, 0.15));
+  opacity: 0;
+  animation:
+    floatMessage 7s ease-in-out forwards,
+    shimmer 3s ease-in-out 1.5s infinite;
+
+  &::before {
+    content: '♥';
+    display: block;
+    font-style: normal;
+    font-size: 0.7rem;
+    margin-bottom: 2px;
+    opacity: 0.7;
+  }
+}
+
+.messageLeft {
+  transform-origin: left center;
+}
+
+.messageRight {
+  transform-origin: right center;
+}
+
+.messageDark {
+  background: linear-gradient(
+    135deg,
+    #daa520 0%,
+    #f0c050 40%,
+    #fff8dc 50%,
+    #f0c050 60%,
+    #e8a830 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4))
+          drop-shadow(0 0 10px rgba(218, 165, 32, 0.2));
+}
+
+.deco {
+  position: absolute;
+  bottom: -10%;
+  font-size: 1.2rem;
+  opacity: 0;
+  animation: riseDeco 5s ease-in-out forwards;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.1));
+}
+
+@keyframes riseDeco {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6) rotate(0deg);
+  }
+  15% {
+    opacity: 0.5;
+    transform: translateY(-10vh) scale(0.9) rotate(-8deg);
+  }
+  50% {
+    opacity: 0.45;
+    transform: translateY(-40vh) scale(1) rotate(6deg);
+  }
+  85% {
+    opacity: 0.3;
+    transform: translateY(-70vh) scale(0.95) rotate(-4deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-90vh) scale(0.8) rotate(10deg);
+  }
+}
+
+@keyframes floatMessage {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) rotate(-2deg) scale(0.96);
+  }
+  25% {
+    opacity: 0.65;
+    transform: translateY(0) rotate(1.5deg) scale(1);
+  }
+  50% {
+    transform: translateY(-3px) rotate(-1deg) scale(1);
+  }
+  75% {
+    opacity: 0.65;
+    transform: translateY(-6px) rotate(1deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-14px) rotate(-1.5deg) scale(0.96);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: -100% 50%;
+  }
+}

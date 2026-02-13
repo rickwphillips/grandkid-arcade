@@ -1,0 +1,142 @@
+/* Playful background wrapper */
+.gameArea {
+  position: relative;
+  padding: 24px 0;
+}
+
+.gameArea::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 16px;
+  opacity: 0.45;
+  background:
+    radial-gradient(circle 8px, #daa520 98%, transparent 100%) 0 0 / 40px 40px,
+    radial-gradient(circle 5px, #d2691e 98%, transparent 100%) 20px 20px / 40px 40px;
+}
+
+.gameAreaDark::before {
+  opacity: 0.18;
+}
+
+.gameArea > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Selection phase */
+.selectionGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.imageChip {
+  cursor: pointer;
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  user-select: none;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.imageChipSelected {
+  border-color: #d2691e;
+  box-shadow: 0 0 0 2px rgba(210, 105, 30, 0.3);
+}
+
+.difficultyRow {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+/* Board */
+.boardWrapper {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.board {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.tile {
+  position: absolute;
+  cursor: pointer;
+  transition: top 0.15s ease, left 0.15s ease;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+
+  &:hover {
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5);
+  }
+}
+
+.emptyTile {
+  position: absolute;
+  cursor: default;
+}
+
+.reference {
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  opacity: 0.85;
+}
+
+/* Win overlay */
+.winOverlay {
+  text-align: center;
+  padding: 32px 0;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.celebration {
+  font-size: 3rem;
+  margin-bottom: 8px;
+}
+
+.statsRow {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 16px 0 24px;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}

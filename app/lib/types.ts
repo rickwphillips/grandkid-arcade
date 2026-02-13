@@ -63,3 +63,9 @@ export interface PuzzleImage {
 export interface PuzzleImageWithData extends PuzzleImage {
   image_data: string;
 }
+
+// Love messages
+export interface LoveMessage {
+  id: number;
+  message: string;
+}
