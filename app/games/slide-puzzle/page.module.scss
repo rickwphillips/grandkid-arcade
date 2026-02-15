@@ -1,7 +1,7 @@
 /* Playful background wrapper */
 .gameArea {
   position: relative;
-  padding: 24px 0;
+  padding: 24px 12px;
 }
 
 .gameArea::before {
@@ -76,7 +76,6 @@
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  flex-shrink: 0;
 }
 
 .tile {

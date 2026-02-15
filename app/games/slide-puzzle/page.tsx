@@ -50,10 +50,10 @@ const GRID_LABELS: Record<GridSize, string> = {
   6: '6×6 Xtra Hard',
 };
 
-/** Board pixel size */
-const BOARD_SIZE = 400;
+/** Max board size in pixels (scales down on small screens) */
+const BOARD_MAX = 400;
 /** Reference image size */
-const REF_SIZE = 150;
+const REF_SIZE = 120;
 
 function defaultGridForAge(age: number): GridSize {
   if (age <= 7) return 3;
@@ -89,7 +89,7 @@ export default function SlidePuzzlePage() {
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
 
   const emptyValue = gridSize * gridSize - 1;
-  const tileSize = BOARD_SIZE / gridSize;
+  const tilePct = 100 / gridSize;
 
   // Set default grid size based on grandkid age
   useEffect(() => {
@@ -365,12 +365,12 @@ export default function SlidePuzzlePage() {
         {/* Board + reference */}
         <Box className={styles.boardWrapper}>
           {/* Board container (relative for win overlay) */}
-          <Box sx={{ position: 'relative', flexShrink: 0 }}>
+          <Box sx={{ position: 'relative', width: '100%', maxWidth: BOARD_MAX }}>
             <Box
               className={styles.board}
               sx={{
-                width: BOARD_SIZE,
-                height: BOARD_SIZE,
+                width: '100%',
+                aspectRatio: '1',
                 background: (theme) =>
                   theme.palette.mode === 'dark'
                     ? 'rgba(0,0,0,0.4)'
@@ -390,10 +390,10 @@ export default function SlidePuzzlePage() {
                     className={styles.tile}
                     onClick={() => handleTileClick(index)}
                     sx={{
-                      width: tileSize,
-                      height: tileSize,
-                      top: currentRow * tileSize,
-                      left: currentCol * tileSize,
+                      width: `${tilePct}%`,
+                      height: `${tilePct}%`,
+                      top: `${currentRow * tilePct}%`,
+                      left: `${currentCol * tilePct}%`,
                       backgroundImage: `url(${imageDataUri})`,
                       backgroundSize: `${gridSize * 100}% ${gridSize * 100}%`,
                       backgroundPosition: `${(tile.homeCol / (gridSize - 1)) * 100}% ${(tile.homeRow / (gridSize - 1)) * 100}%`,
