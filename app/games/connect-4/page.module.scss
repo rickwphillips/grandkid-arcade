@@ -129,6 +129,10 @@ $board-gap: 6px;
 }
 
 .winPiece {
+  z-index: 25;
+  position: relative;
+  outline: 3px solid white;
+  outline-offset: -1px;
   animation: winGlow 0.8s ease-in-out infinite alternate;
 }
 
@@ -157,12 +161,14 @@ $board-gap: 6px;
   from {
     box-shadow:
       inset 0 -3px 6px rgba(0, 0, 0, 0.2),
-      0 0 8px rgba(255, 255, 255, 0.4);
+      0 0 6px 2px rgba(255, 255, 255, 0.6);
+    outline-color: rgba(255, 255, 255, 0.7);
   }
   to {
     box-shadow:
       inset 0 -3px 6px rgba(0, 0, 0, 0.2),
-      0 0 20px rgba(255, 255, 255, 0.8);
+      0 0 14px 4px rgba(255, 255, 255, 0.95);
+    outline-color: white;
   }
 }
 
