@@ -17,19 +17,23 @@ import {
   Fade,
   Alert,
   CircularProgress,
+  Switch,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ImageIcon from '@mui/icons-material/Image';
+import TuneIcon from '@mui/icons-material/Tune';
 import { AdminGuard, useAdmin } from '../../components/AdminGuard';
 import { DarkModeToggle } from '../../components/DarkModeToggle';
 import { api } from '../../lib/api';
+import { useSettings } from '../../lib/useSettings';
 import type { PuzzleImage } from '../../lib/types';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 function PuzzleImagesAdmin() {
   const { logout } = useAdmin();
+  const { loveMessages, floatingIcons, setLoveMessages, setFloatingIcons } = useSettings();
   const [images, setImages] = useState<PuzzleImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -237,6 +241,47 @@ function PuzzleImagesAdmin() {
                     Clear
                   </Button>
                 )}
+              </Box>
+            </CardContent>
+          </Card>
+        </Fade>
+
+        {/* Game Settings */}
+        <Fade in={mounted} timeout={1100}>
+          <Card sx={{ mb: 4 }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <TuneIcon sx={{ color: 'text.secondary' }} />
+                <Typography variant="h6">Game Settings</Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                These settings are stored on this device only.
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Typography variant="subtitle2">Love Messages</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Floating &quot;Grampy loves you!&quot; messages during games
+                    </Typography>
+                  </Box>
+                  <Switch
+                    checked={loveMessages}
+                    onChange={(_, checked) => setLoveMessages(checked)}
+                  />
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Typography variant="subtitle2">Floating Icons</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Hearts, balloons, and other decorative emojis during games
+                    </Typography>
+                  </Box>
+                  <Switch
+                    checked={floatingIcons}
+                    onChange={(_, checked) => setFloatingIcons(checked)}
+                  />
+                </Box>
               </Box>
             </CardContent>
           </Card>

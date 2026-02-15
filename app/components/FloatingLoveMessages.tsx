@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Box } from '@mui/material';
 import { useThemeMode } from '@/app/components/ThemeProvider';
 import { api } from '@/app/lib/api';
+import { useSettings } from '@/app/lib/useSettings';
 import type { LoveMessage } from '@/app/lib/types';
 import styles from './FloatingLoveMessages.module.scss';
 
@@ -40,6 +41,7 @@ const DECO_DURATION = 6000;
 
 export function FloatingLoveMessages({ name, active }: FloatingLoveMessagesProps) {
   const { mode } = useThemeMode();
+  const { loveMessages: loveMessagesEnabled, floatingIcons: floatingIconsEnabled } = useSettings();
   const [messages, setMessages] = useState<LoveMessage[]>([]);
   const [activeMessages, setActiveMessages] = useState<ActiveMessage[]>([]);
   const [decos, setDecos] = useState<FloatingDeco[]>([]);
@@ -85,7 +87,7 @@ export function FloatingLoveMessages({ name, active }: FloatingLoveMessagesProps
 
   // Schedule messages while active
   useEffect(() => {
-    if (!active || messages.length === 0) {
+    if (!active || messages.length === 0 || !loveMessagesEnabled) {
       if (timerRef.current) clearTimeout(timerRef.current);
       return;
     }
@@ -107,11 +109,11 @@ export function FloatingLoveMessages({ name, active }: FloatingLoveMessagesProps
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [active, messages.length, spawnMessage]);
+  }, [active, messages.length, spawnMessage, loveMessagesEnabled]);
 
   // Spawn floating balloons & hearts while active
   useEffect(() => {
-    if (!active) {
+    if (!active || !floatingIconsEnabled) {
       if (decoTimerRef.current) clearTimeout(decoTimerRef.current);
       setDecos([]);
       return;
@@ -147,7 +149,7 @@ export function FloatingLoveMessages({ name, active }: FloatingLoveMessagesProps
     return () => {
       if (decoTimerRef.current) clearTimeout(decoTimerRef.current);
     };
-  }, [active]);
+  }, [active, floatingIconsEnabled]);
 
   // Clear active messages when deactivated
   useEffect(() => {
