@@ -18,6 +18,18 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.3.0',
+    date: '2026-02-15',
+    title: 'Slide Puzzle Solver',
+    changes: [
+      { icon: '🪄', text: 'Solve button auto-solves 3x3, 4x4, and 5x5 puzzles with animated tile moves' },
+      { icon: '⏹️', text: 'Cancel solve mid-animation to resume playing manually' },
+      { icon: '🏅', text: 'Win badge overlays the completed puzzle — dismiss to admire your work' },
+      { icon: '👀', text: 'Hint and Solve buttons hidden by default — reveal with Show Hint' },
+      { icon: '🚫', text: 'Auto-solved puzzles skip score submission' },
+    ],
+  },
+  {
     version: '1.2.0',
     date: '2026-02-13',
     title: 'Picture Matcher & Difficulty',
