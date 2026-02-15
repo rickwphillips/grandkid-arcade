@@ -22,7 +22,7 @@ type Phase = 'select' | 'play' | 'done';
 const DIFFICULTY_CONFIG: Record<Difficulty, { pairs: number; cols: number; label: string }> = {
   easy:   { pairs: 6,  cols: 3, label: 'Easy (6 pairs)' },
   medium: { pairs: 8,  cols: 4, label: 'Medium (8 pairs)' },
-  hard:   { pairs: 12, cols: 4, label: 'Hard (12 pairs)' },
+  hard:   { pairs: 12, cols: 6, label: 'Hard (12 pairs)' },
 };
 
 interface CardData {
@@ -238,7 +238,7 @@ export default function PictureMatcherPage() {
 
   // --- Gameplay + Done ---
   const gridClass =
-    config.cols === 3 ? styles.grid3 : styles.grid4;
+    config.cols === 3 ? styles.grid3 : config.cols === 6 ? styles.grid6 : styles.grid4;
 
   return (
     <PageContainer title="Picture Matcher" subtitle="Find all the matching pairs!">

@@ -51,10 +51,21 @@
   margin: 0 auto;
 }
 
+.grid6 {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: clamp(4px, 1.5vw, 8px);
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
 .card {
   aspect-ratio: 1;
   perspective: 600px;
   cursor: pointer;
+  position: relative;
+  z-index: 0;
 }
 
 .cardInner {
