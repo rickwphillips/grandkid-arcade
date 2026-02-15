@@ -104,11 +104,26 @@
   opacity: 0.85;
 }
 
-/* Win overlay */
+/* Win badge — absolute overlay on top of the puzzle board */
 .winOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(4px);
+  border-radius: 8px;
   text-align: center;
-  padding: 32px 0;
+  z-index: 2;
   animation: fadeIn 0.5s ease;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
 }
 
 @keyframes fadeIn {
@@ -123,15 +138,15 @@
 }
 
 .celebration {
-  font-size: 3rem;
-  margin-bottom: 8px;
+  font-size: 2.5rem;
+  margin-bottom: 4px;
 }
 
 .statsRow {
   display: flex;
   justify-content: center;
   gap: 24px;
-  margin: 16px 0 24px;
+  margin: 8px 0 12px;
 }
 
 .actions {
@@ -139,4 +154,5 @@
   justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
+  margin-top: 16px;
 }

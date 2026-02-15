@@ -1,19 +1,24 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Box,
   Typography,
   Button,
+  IconButton,
   CircularProgress,
   Chip,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import ReplayIcon from '@mui/icons-material/Replay';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import ImageIcon from '@mui/icons-material/Image';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import CloseIcon from '@mui/icons-material/Close';
 import { PageContainer } from '@/app/components/PageContainer';
 import { FloatingLoveMessages } from '@/app/components/FloatingLoveMessages';
 import { useThemeMode } from '@/app/components/ThemeProvider';
@@ -26,6 +31,7 @@ import {
   moveTile,
   isSolved,
   calcScore,
+  solvePuzzle,
 } from './puzzleLogic';
 import { playSlide, playWin } from './sounds';
 import styles from './page.module.scss';
@@ -68,6 +74,12 @@ export default function SlidePuzzlePage() {
   const [moves, setMoves] = useState(0);
   const [starting, setStarting] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const [solving, setSolving] = useState(false);
+  const [autoSolved, setAutoSolved] = useState(false);
+  const [showWinBadge, setShowWinBadge] = useState(false);
+  const [solveError, setSolveError] = useState(false);
+  const solveTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const solveCancelledRef = useRef(false);
 
   // Phase 3: Win state
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
@@ -104,6 +116,18 @@ export default function SlidePuzzlePage() {
     };
   }, []);
 
+  // Show win badge when entering win phase
+  useEffect(() => {
+    if (phase === 'win') setShowWinBadge(true);
+  }, [phase]);
+
+  // Clean up solve animation on unmount
+  useEffect(() => {
+    return () => {
+      if (solveTimerRef.current) clearInterval(solveTimerRef.current);
+    };
+  }, []);
+
   // Start game: fetch full image and generate board
   const handleStart = useCallback(async () => {
     if (!selectedImageId) return;
@@ -114,7 +138,7 @@ export default function SlidePuzzlePage() {
       setBoard(generateBoard(gridSize));
       setMoves(0);
       setScoreSubmitted(false);
-      setShowHint(gridSize === 3);
+      setShowHint(false);
       setPhase('play');
     } catch {
       // Could show an error; for now just stop loading
@@ -126,7 +150,7 @@ export default function SlidePuzzlePage() {
   // Handle tile click
   const handleTileClick = useCallback(
     (index: number) => {
-      if (phase !== 'play') return;
+      if (phase !== 'play' || solving) return;
       const newBoard = moveTile(board, gridSize, index);
       if (!newBoard) return;
 
@@ -139,12 +163,64 @@ export default function SlidePuzzlePage() {
         playWin();
       }
     },
-    [board, gridSize, phase],
+    [board, gridSize, phase, solving],
   );
+
+  // Auto-solve: compute solution and animate moves
+  const handleSolve = useCallback(() => {
+    solveCancelledRef.current = false;
+    setSolving(true);
+    setAutoSolved(true);
+
+    // Defer computation to let React render "Solving…" state
+    setTimeout(() => {
+      if (solveCancelledRef.current) return;
+
+      const solution = solvePuzzle(board, gridSize);
+      if (solveCancelledRef.current) return;
+
+      if (!solution || solution.length === 0) {
+        setSolving(false);
+        setAutoSolved(false);
+        if (!solution) setSolveError(true);
+        return;
+      }
+
+      let step = 0;
+      solveTimerRef.current = setInterval(() => {
+        const idx = solution[step];
+        playSlide();
+        setBoard((prev) => moveTile(prev, gridSize, idx) ?? prev);
+        setMoves((m) => m + 1);
+        step++;
+
+        if (step >= solution.length) {
+          if (solveTimerRef.current) clearInterval(solveTimerRef.current);
+          solveTimerRef.current = null;
+          setTimeout(() => {
+            setSolving(false);
+            setPhase('win');
+            playWin();
+          }, 300);
+        }
+      }, 250);
+    }, 50);
+  }, [board, gridSize]);
+
+  // Cancel an in-progress solve so the user can resume manually
+  const handleCancelSolve = useCallback(() => {
+    solveCancelledRef.current = true;
+    if (solveTimerRef.current) {
+      clearInterval(solveTimerRef.current);
+      solveTimerRef.current = null;
+    }
+    setSolving(false);
+    setAutoSolved(false);
+  }, []);
 
   // Submit score on win
   useEffect(() => {
-    if (phase !== 'win' || scoreSubmitted || !selected) return;
+    if (phase !== 'win' || scoreSubmitted || !selected || autoSolved) return;
     setScoreSubmitted(true);
     const score = calcScore(moves, gridSize);
     api
@@ -157,25 +233,33 @@ export default function SlidePuzzlePage() {
       .catch(() => {
         // Non-critical
       });
-  }, [phase, scoreSubmitted, selected, moves, gridSize]);
+  }, [phase, scoreSubmitted, selected, moves, gridSize, autoSolved]);
 
   // Play again: same image, re-shuffle
   const playAgain = useCallback(() => {
+    if (solveTimerRef.current) { clearInterval(solveTimerRef.current); solveTimerRef.current = null; }
     setBoard(generateBoard(gridSize));
     setMoves(0);
     setScoreSubmitted(false);
-    setShowHint(gridSize === 3);
+    setShowHint(false);
+    setSolving(false);
+    setAutoSolved(false);
+    setShowWinBadge(false);
     setPhase('play');
   }, [gridSize]);
 
   // New image: back to selection
   const newImage = useCallback(() => {
+    if (solveTimerRef.current) { clearInterval(solveTimerRef.current); solveTimerRef.current = null; }
     setPhase('select');
     setImageDataUri('');
     setBoard([]);
     setMoves(0);
     setScoreSubmitted(false);
     setShowHint(false);
+    setSolving(false);
+    setAutoSolved(false);
+    setShowWinBadge(false);
   }, []);
 
   const score = useMemo(
@@ -273,7 +357,7 @@ export default function SlidePuzzlePage() {
             Moves: {moves}
           </Typography>
           {phase === 'play' && (
-            <Button size="small" variant="outlined" startIcon={<ShuffleIcon />} onClick={playAgain}>
+            <Button size="small" variant="outlined" startIcon={<ShuffleIcon />} onClick={playAgain} disabled={solving}>
               Re-scramble
             </Button>
           )}
@@ -281,108 +365,151 @@ export default function SlidePuzzlePage() {
 
         {/* Board + reference */}
         <Box className={styles.boardWrapper}>
-          {/* Puzzle board */}
-          <Box
-            className={styles.board}
-            sx={{
-              width: BOARD_SIZE,
-              height: BOARD_SIZE,
-              background: (theme) =>
-                theme.palette.mode === 'dark'
-                  ? 'rgba(0,0,0,0.4)'
-                  : 'rgba(0,0,0,0.1)',
-            }}
-          >
-            {board.map((value, index) => {
-              if (value === emptyValue) return null;
+          {/* Board container (relative for win overlay) */}
+          <Box sx={{ position: 'relative', flexShrink: 0 }}>
+            <Box
+              className={styles.board}
+              sx={{
+                width: BOARD_SIZE,
+                height: BOARD_SIZE,
+                background: (theme) =>
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(0,0,0,0.4)'
+                    : 'rgba(0,0,0,0.1)',
+              }}
+            >
+              {board.map((value, index) => {
+                if (value === emptyValue) return null;
 
-              const tile = tileFromValue(value, gridSize);
-              const currentRow = Math.floor(index / gridSize);
-              const currentCol = index % gridSize;
+                const tile = tileFromValue(value, gridSize);
+                const currentRow = Math.floor(index / gridSize);
+                const currentCol = index % gridSize;
 
-              return (
-                <Box
-                  key={value}
-                  className={styles.tile}
-                  onClick={() => handleTileClick(index)}
-                  sx={{
-                    width: tileSize,
-                    height: tileSize,
-                    top: currentRow * tileSize,
-                    left: currentCol * tileSize,
-                    backgroundImage: `url(${imageDataUri})`,
-                    backgroundSize: `${gridSize * 100}% ${gridSize * 100}%`,
-                    backgroundPosition: `${(tile.homeCol / (gridSize - 1)) * 100}% ${(tile.homeRow / (gridSize - 1)) * 100}%`,
-                  }}
-                />
-              );
-            })}
+                return (
+                  <Box
+                    key={value}
+                    className={styles.tile}
+                    onClick={() => handleTileClick(index)}
+                    sx={{
+                      width: tileSize,
+                      height: tileSize,
+                      top: currentRow * tileSize,
+                      left: currentCol * tileSize,
+                      backgroundImage: `url(${imageDataUri})`,
+                      backgroundSize: `${gridSize * 100}% ${gridSize * 100}%`,
+                      backgroundPosition: `${(tile.homeCol / (gridSize - 1)) * 100}% ${(tile.homeRow / (gridSize - 1)) * 100}%`,
+                    }}
+                  />
+                );
+              })}
+            </Box>
+
+            {/* Win badge overlay (on top of puzzle) */}
+            {phase === 'win' && showWinBadge && (
+              <Box className={styles.winOverlay}>
+                <IconButton
+                  className={styles.closeBtn}
+                  onClick={() => setShowWinBadge(false)}
+                  sx={{ color: 'rgba(255,255,255,0.8)', '&:hover': { color: '#fff' } }}
+                  aria-label="Close results"
+                >
+                  <CloseIcon />
+                </IconButton>
+                <Box className={styles.celebration}>🎉🧩🎉</Box>
+                <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5, color: '#fff' }}>
+                  Puzzle Complete!
+                </Typography>
+
+                <Box className={styles.statsRow}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: '#fff' }}>
+                      {moves}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                      Moves
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <EmojiEventsIcon sx={{ fontSize: 28, color: '#DAA520', verticalAlign: 'middle' }} />
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: '#fff' }}>
+                      {score}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                      Score
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {autoSolved && (
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                    Auto-solved — no score recorded
+                  </Typography>
+                )}
+                {!autoSolved && selected && scoreSubmitted && (
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                    Score saved for {selected.name}!
+                  </Typography>
+                )}
+              </Box>
+            )}
           </Box>
 
-          {/* Hint toggle + reference image (disabled on 6×6) */}
+          {/* Side column: hint/solve during play, view results toggle on win */}
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-            {gridSize < 6 && (
+            {phase === 'play' && (
+              <>
+                {gridSize < 6 && (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={showHint ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    onClick={() => setShowHint((v) => !v)}
+                    disabled={solving}
+                  >
+                    {showHint ? 'Hide Hint' : 'Show Hint'}
+                  </Button>
+                )}
+                {showHint && (
+                  <Box
+                    className={styles.reference}
+                    component="img"
+                    src={imageDataUri}
+                    alt="Reference"
+                    sx={{
+                      width: REF_SIZE,
+                      height: REF_SIZE,
+                      objectFit: 'cover',
+                    }}
+                  />
+                )}
+                {showHint && gridSize <= 5 && (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color={solving ? 'warning' : 'primary'}
+                    startIcon={solving ? <CloseIcon /> : <AutoFixHighIcon />}
+                    onClick={solving ? handleCancelSolve : handleSolve}
+                  >
+                    {solving ? 'Cancel' : 'Solve'}
+                  </Button>
+                )}
+              </>
+            )}
+            {phase === 'win' && !showWinBadge && (
               <Button
                 size="small"
                 variant="outlined"
-                startIcon={showHint ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                onClick={() => setShowHint((v) => !v)}
+                startIcon={<EmojiEventsIcon />}
+                onClick={() => setShowWinBadge(true)}
               >
-                {showHint ? 'Hide Hint' : 'Show Hint'}
+                View Results
               </Button>
-            )}
-            {showHint && (
-              <Box
-                className={styles.reference}
-                component="img"
-                src={imageDataUri}
-                alt="Reference"
-                sx={{
-                  width: REF_SIZE,
-                  height: REF_SIZE,
-                  objectFit: 'cover',
-                }}
-              />
             )}
           </Box>
         </Box>
-      </Box>
-      </Box>
 
-      {/* Win screen */}
-      {phase === 'win' && (
-        <Box className={styles.winOverlay}>
-          <Box className={styles.celebration}>🎉🧩🎉</Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-            Puzzle Complete!
-          </Typography>
-
-          <Box className={styles.statsRow}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                {moves}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Moves
-              </Typography>
-            </Box>
-            <Box sx={{ textAlign: 'center' }}>
-              <EmojiEventsIcon sx={{ fontSize: 28, color: '#DAA520', verticalAlign: 'middle' }} />
-              <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                {score}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Score
-              </Typography>
-            </Box>
-          </Box>
-
-          {selected && scoreSubmitted && (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Score saved for {selected.name}!
-            </Typography>
-          )}
-
+        {/* Win action buttons (always accessible below board) */}
+        {phase === 'win' && (
           <Box className={styles.actions}>
             <Button variant="contained" startIcon={<ReplayIcon />} onClick={playAgain}>
               Play Again
@@ -391,8 +518,20 @@ export default function SlidePuzzlePage() {
               New Image
             </Button>
           </Box>
-        </Box>
-      )}
+        )}
+      </Box>
+      </Box>
+
+      <Snackbar
+        open={solveError}
+        autoHideDuration={4000}
+        onClose={() => setSolveError(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="warning" variant="filled" onClose={() => setSolveError(false)}>
+          Sorry, this puzzle is too tricky for me to solve! Try solving a few tiles first.
+        </Alert>
+      </Snackbar>
     </PageContainer>
   );
 }

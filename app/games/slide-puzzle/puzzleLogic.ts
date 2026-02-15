@@ -135,3 +135,164 @@ export function calcScore(moves: number, gridSize: number): number {
 
   return Math.min(m, Math.max(10, Math.round(m * p / moves)));
 }
+
+// --------------- IDA* Solver ---------------
+
+/** Manhattan distance + linear conflict heuristic (admissible) */
+function solverHeuristic(b: number[], gridSize: number): number {
+  const n = gridSize * gridSize;
+  const emptyVal = n - 1;
+  let manhattan = 0;
+
+  for (let i = 0; i < n; i++) {
+    const v = b[i];
+    if (v === emptyVal) continue;
+    manhattan +=
+      Math.abs(Math.floor(v / gridSize) - Math.floor(i / gridSize)) +
+      Math.abs((v % gridSize) - (i % gridSize));
+  }
+
+  return manhattan + linearConflict(b, gridSize);
+}
+
+/** Count linear conflicts: tiles in their goal row/col but needing to pass each other */
+function linearConflict(b: number[], gridSize: number): number {
+  const n = gridSize * gridSize;
+  const emptyVal = n - 1;
+  let lc = 0;
+
+  // Row conflicts
+  for (let row = 0; row < gridSize; row++) {
+    const cols: number[] = [];
+    for (let c = 0; c < gridSize; c++) {
+      const v = b[row * gridSize + c];
+      if (v !== emptyVal && Math.floor(v / gridSize) === row) {
+        cols.push(v % gridSize);
+      }
+    }
+    lc += lcCount(cols);
+  }
+
+  // Column conflicts
+  for (let col = 0; col < gridSize; col++) {
+    const rows: number[] = [];
+    for (let r = 0; r < gridSize; r++) {
+      const v = b[r * gridSize + col];
+      if (v !== emptyVal && (v % gridSize) === col) {
+        rows.push(Math.floor(v / gridSize));
+      }
+    }
+    lc += lcCount(rows);
+  }
+
+  return lc;
+}
+
+/** Minimum removals to make sequence non-decreasing, × 2 */
+function lcCount(seq: number[]): number {
+  if (seq.length <= 1) return 0;
+  // Longest non-decreasing subsequence via patience sorting
+  const tails: number[] = [];
+  for (const x of seq) {
+    let lo = 0, hi = tails.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (tails[mid] <= x) lo = mid + 1;
+      else hi = mid;
+    }
+    if (lo === tails.length) tails.push(x);
+    else tails[lo] = x;
+  }
+  return (seq.length - tails.length) * 2;
+}
+
+/**
+ * IDA* solver for the slide puzzle.
+ * Returns an array of board positions (indices) to click in order, or null if
+ * the puzzle cannot be solved within the node budget.
+ * Only supports gridSize <= 4.
+ */
+export function solvePuzzle(
+  board: number[],
+  gridSize: number,
+): number[] | null {
+  if (gridSize > 5) return null;
+
+  const n = gridSize * gridSize;
+  const emptyVal = n - 1;
+  const dirs: [number, number][] = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+
+  // Weight > 1 trades optimality for speed (needed for 5×5)
+  const weight = gridSize <= 4 ? 1 : 2.5;
+
+  const h0 = solverHeuristic(board, gridSize);
+  if (h0 === 0) return [];
+
+  let solution: number[] | null = null;
+  let nodeCount = 0;
+  const NODE_LIMIT = 15_000_000;
+
+  function search(
+    b: number[],
+    emptyIdx: number,
+    g: number,
+    threshold: number,
+    path: number[],
+    lastDir: number,
+  ): number {
+    const h = solverHeuristic(b, gridSize);
+    const f = g + weight * h;
+    if (f > threshold) return f;
+    if (h === 0) {
+      solution = [...path];
+      return -1;
+    }
+    if (++nodeCount > NODE_LIMIT) return Infinity;
+
+    let minT = Infinity;
+    const eRow = Math.floor(emptyIdx / gridSize);
+    const eCol = emptyIdx % gridSize;
+
+    for (let d = 0; d < 4; d++) {
+      // Don't reverse last move (opposite dirs: 0↔1, 2↔3)
+      if (lastDir >= 0 && d === (lastDir ^ 1)) continue;
+
+      const nRow = eRow + dirs[d][0];
+      const nCol = eCol + dirs[d][1];
+      if (nRow < 0 || nRow >= gridSize || nCol < 0 || nCol >= gridSize)
+        continue;
+
+      const nIdx = nRow * gridSize + nCol;
+
+      // Swap empty with tile at nIdx
+      b[emptyIdx] = b[nIdx];
+      b[nIdx] = emptyVal;
+      path.push(nIdx);
+
+      const t = search(b, nIdx, g + 1, threshold, path, d);
+
+      // Undo swap
+      path.pop();
+      b[nIdx] = b[emptyIdx];
+      b[emptyIdx] = emptyVal;
+
+      if (t === -1) return -1;
+      if (t < minT) minT = t;
+    }
+
+    return minT;
+  }
+
+  const work = [...board];
+  const emptyIdx = work.indexOf(emptyVal);
+  let threshold = weight * h0;
+
+  while (threshold < Infinity) {
+    const t = search(work, emptyIdx, 0, threshold, [], -1);
+    if (t === -1) return solution;
+    if (t === Infinity) return null;
+    threshold = t;
+  }
+
+  return null;
+}
