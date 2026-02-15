@@ -10,6 +10,10 @@ import {
   Chip,
   Snackbar,
   Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import ReplayIcon from '@mui/icons-material/Replay';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
@@ -283,27 +287,22 @@ export default function SlidePuzzlePage() {
           ) : (
             <>
               {/* Image selection */}
-              <Typography variant="subtitle1" sx={{ textAlign: 'center', mb: 1, fontWeight: 600 }}>
-                Choose an image
-              </Typography>
-              <Box className={styles.selectionGrid}>
-                {images.map((img) => (
-                  <Box
-                    key={img.id}
-                    className={`${styles.imageChip} ${selectedImageId === img.id ? styles.imageChipSelected : ''}`}
-                    onClick={() => setSelectedImageId(img.id)}
-                    sx={{
-                      background: (theme) =>
-                        theme.palette.mode === 'dark'
-                          ? 'rgba(255,255,255,0.08)'
-                          : 'rgba(0,0,0,0.04)',
-                      color: 'text.primary',
-                    }}
+              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                <FormControl sx={{ minWidth: 240 }}>
+                  <InputLabel id="puzzle-image-label">Choose an image</InputLabel>
+                  <Select
+                    labelId="puzzle-image-label"
+                    value={selectedImageId ?? ''}
+                    label="Choose an image"
+                    onChange={(e) => setSelectedImageId(e.target.value as number)}
                   >
-                    <ImageIcon sx={{ fontSize: 18, mr: 0.5, verticalAlign: 'middle', opacity: 0.7 }} />
-                    {img.title}
-                  </Box>
-                ))}
+                    {images.map((img) => (
+                      <MenuItem key={img.id} value={img.id}>
+                        {img.title}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Box>
 
               {/* Difficulty selection */}
