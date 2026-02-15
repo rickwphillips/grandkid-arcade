@@ -5,6 +5,7 @@ import { Box, Typography, Button, Chip, CircularProgress } from '@mui/material';
 import ReplayIcon from '@mui/icons-material/Replay';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import { WinBadge } from '@/app/components/WinBadge';
 import { PageContainer } from '@/app/components/PageContainer';
 import { FloatingLoveMessages } from '@/app/components/FloatingLoveMessages';
 import { useThemeMode } from '@/app/components/ThemeProvider';
@@ -80,6 +81,7 @@ export default function PictureMatcherPage() {
   const [moves, setMoves] = useState(0);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [locked, setLocked] = useState(false);
+  const [showWinBadge, setShowWinBadge] = useState(false);
 
   const config = DIFFICULTY_CONFIG[difficulty];
 
@@ -122,6 +124,7 @@ export default function PictureMatcherPage() {
     if (phase !== 'play') return;
     if (matched.size === config.pairs && moves > 0) {
       setPhase('done');
+      setShowWinBadge(true);
       playWin();
     }
   }, [matched, moves, config.pairs, phase]);
@@ -182,6 +185,7 @@ export default function PictureMatcherPage() {
     setMoves(0);
     setScoreSubmitted(false);
     setLocked(false);
+    setShowWinBadge(false);
     setPhase('play');
   }, [config.pairs]);
 
@@ -193,6 +197,7 @@ export default function PictureMatcherPage() {
     setMoves(0);
     setScoreSubmitted(false);
     setLocked(false);
+    setShowWinBadge(false);
   }, []);
 
   const score = calcScore(moves, config.pairs);
@@ -249,92 +254,88 @@ export default function PictureMatcherPage() {
             </Typography>
           </Box>
 
-          {/* Card grid */}
-          <Box className={gridClass} sx={locked ? { pointerEvents: 'none' } : undefined}>
-            {cards.map((card, index) => {
-              const isFlipped = flipped.includes(index) || matched.has(card.matchKey);
-              const isMatched = matched.has(card.matchKey);
+          {/* Card grid with win overlay */}
+          <Box sx={{ position: 'relative' }}>
+            <Box className={gridClass} sx={locked ? { pointerEvents: 'none' } : undefined}>
+              {cards.map((card, index) => {
+                const isFlipped = flipped.includes(index) || matched.has(card.matchKey);
+                const isMatched = matched.has(card.matchKey);
 
-              return (
-                <Box
-                  key={card.id}
-                  className={`${styles.card} ${isFlipped ? styles.flipped : ''} ${isMatched ? styles.matched : ''}`}
-                  onClick={() => handleFlip(index)}
-                >
-                  <Box className={styles.cardInner}>
-                    <Box className={styles.cardFront}>?</Box>
-                    <Box
-                      className={styles.cardBack}
-                      sx={{
-                        background: (theme) =>
-                          theme.palette.mode === 'dark'
-                            ? 'rgba(255,255,255,0.08)'
-                            : 'rgba(0,0,0,0.04)',
-                      }}
-                    >
-                      {card.type === 'image' ? (
-                        <Box
-                          component="img"
-                          src={card.content}
-                          alt=""
-                          className={styles.cardImage}
-                        />
-                      ) : (
-                        card.content
-                      )}
+                return (
+                  <Box
+                    key={card.id}
+                    className={`${styles.card} ${isFlipped ? styles.flipped : ''} ${isMatched ? styles.matched : ''}`}
+                    onClick={() => handleFlip(index)}
+                  >
+                    <Box className={styles.cardInner}>
+                      <Box className={styles.cardFront}>?</Box>
+                      <Box
+                        className={styles.cardBack}
+                        sx={{
+                          background: (theme) =>
+                            theme.palette.mode === 'dark'
+                              ? 'rgba(255,255,255,0.08)'
+                              : 'rgba(0,0,0,0.04)',
+                        }}
+                      >
+                        {card.type === 'image' ? (
+                          <Box
+                            component="img"
+                            src={card.content}
+                            alt=""
+                            className={styles.cardImage}
+                          />
+                        ) : (
+                          card.content
+                        )}
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
-              );
-            })}
-          </Box>
-        </Box>
-      </Box>
-
-      {/* Win screen */}
-      {phase === 'done' && (
-        <Box className={styles.winOverlay}>
-          <Box className={styles.celebration}>🎉🏆🎉</Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-            You did it!
-          </Typography>
-
-          <Box className={styles.statsRow}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                {moves}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Moves
-              </Typography>
+                );
+              })}
             </Box>
-            <Box sx={{ textAlign: 'center' }}>
-              <EmojiEventsIcon sx={{ fontSize: 28, color: '#DAA520', verticalAlign: 'middle' }} />
-              <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                {score}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Score
-              </Typography>
-            </Box>
+
+            <WinBadge
+              visible={phase === 'done' && showWinBadge}
+              onClose={() => setShowWinBadge(false)}
+              title="You did it!"
+              moves={moves}
+              score={score}
+              message={
+                selected && scoreSubmitted
+                  ? `Score saved for ${selected.name}!`
+                  : undefined
+              }
+            />
           </Box>
 
-          {selected && scoreSubmitted && (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Score saved for {selected.name}!
-            </Typography>
+          {/* Win action buttons (below grid, always accessible) */}
+          {phase === 'done' && (
+            <Box className={styles.actions}>
+              <Button variant="contained" startIcon={<ReplayIcon />} onClick={playAgain}>
+                Play Again
+              </Button>
+              <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={newGame}>
+                New Game
+              </Button>
+            </Box>
           )}
 
-          <Box className={styles.actions}>
-            <Button variant="contained" startIcon={<ReplayIcon />} onClick={playAgain}>
-              Play Again
-            </Button>
-            <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={newGame}>
-              New Game
-            </Button>
-          </Box>
+          {/* View Results toggle when badge is dismissed */}
+          {phase === 'done' && !showWinBadge && (
+            <Box sx={{ textAlign: 'center', mt: 1 }}>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<EmojiEventsIcon />}
+                onClick={() => setShowWinBadge(true)}
+              >
+                View Results
+              </Button>
+            </Box>
+          )}
         </Box>
-      )}
+      </Box>
     </PageContainer>
   );
 }

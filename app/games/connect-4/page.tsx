@@ -7,6 +7,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PeopleIcon from '@mui/icons-material/People';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { WinBadge } from '@/app/components/WinBadge';
 import { PageContainer } from '@/app/components/PageContainer';
 import { FloatingLoveMessages } from '@/app/components/FloatingLoveMessages';
 import { useThemeMode } from '@/app/components/ThemeProvider';
@@ -43,6 +44,7 @@ export default function Connect4Page() {
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [aiThinking, setAiThinking] = useState(false);
   const [lastDrop, setLastDrop] = useState<{ row: number; col: number } | null>(null);
+  const [showWinBadge, setShowWinBadge] = useState(false);
   const aiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Cleanup AI timer on unmount
@@ -51,6 +53,11 @@ export default function Connect4Page() {
       if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
     };
   }, []);
+
+  // Show win badge when entering done phase
+  useEffect(() => {
+    if (phase === 'done') setShowWinBadge(true);
+  }, [phase]);
 
   const startGame = useCallback((m: Mode) => {
     setGameMode(m);
@@ -165,6 +172,7 @@ export default function Connect4Page() {
     setScoreSubmitted(false);
     setAiThinking(false);
     setLastDrop(null);
+    setShowWinBadge(false);
     setPhase('play');
   }, []);
 
@@ -179,6 +187,7 @@ export default function Connect4Page() {
     setScoreSubmitted(false);
     setAiThinking(false);
     setLastDrop(null);
+    setShowWinBadge(false);
   }, []);
 
   const isWinCell = (row: number, col: number) =>
@@ -269,98 +278,89 @@ export default function Connect4Page() {
             </Typography>
           </Box>
 
-          {/* Board */}
-          <Box className={styles.board}>
-            {Array.from({ length: COLS }, (_, col) => (
-              <Box
-                key={col}
-                className={`${styles.column} ${phase !== 'play' || aiThinking ? styles.columnDisabled : ''}`}
-                onClick={() => handleColumnClick(col)}
-              >
-                {Array.from({ length: ROWS }, (_, row) => {
-                  const cell = board[row][col];
-                  const winning = isWinCell(row, col);
-                  const isNewDrop = lastDrop?.row === row && lastDrop?.col === col;
-                  return (
-                    <Box key={row} className={styles.cell}>
-                      {cell && (
-                        <Box
-                          className={`${
-                            isNewDrop ? styles.piece : styles.pieceStatic
-                          } ${
-                            cell === 'red' ? styles.pieceRed : styles.pieceYellow
-                          } ${winning ? styles.winPiece : ''}`}
-                          style={
-                            isNewDrop
-                              ? {
-                                  '--drop-rows': row + 1,
-                                  animationDuration: `${0.15 + row * 0.07}s`,
-                                } as React.CSSProperties
-                              : undefined
-                          }
-                        />
-                      )}
-                    </Box>
-                  );
-                })}
-              </Box>
-            ))}
-            {/* Board face overlay — blue surface with circular holes */}
-            <Box className={styles.boardFace} />
-          </Box>
-        </Box>
-      </Box>
+          {/* Board with win overlay */}
+          <Box sx={{ position: 'relative' }}>
+            <Box className={styles.board}>
+              {Array.from({ length: COLS }, (_, col) => (
+                <Box
+                  key={col}
+                  className={`${styles.column} ${phase !== 'play' || aiThinking ? styles.columnDisabled : ''}`}
+                  onClick={() => handleColumnClick(col)}
+                >
+                  {Array.from({ length: ROWS }, (_, row) => {
+                    const cell = board[row][col];
+                    const winning = isWinCell(row, col);
+                    const isNewDrop = lastDrop?.row === row && lastDrop?.col === col;
+                    return (
+                      <Box key={row} className={styles.cell}>
+                        {cell && (
+                          <Box
+                            className={`${
+                              isNewDrop ? styles.piece : styles.pieceStatic
+                            } ${
+                              cell === 'red' ? styles.pieceRed : styles.pieceYellow
+                            } ${winning ? styles.winPiece : ''}`}
+                            style={
+                              isNewDrop
+                                ? {
+                                    '--drop-rows': row + 1,
+                                    animationDuration: `${0.15 + row * 0.07}s`,
+                                  } as React.CSSProperties
+                                : undefined
+                            }
+                          />
+                        )}
+                      </Box>
+                    );
+                  })}
+                </Box>
+              ))}
+              {/* Board face overlay — blue surface with circular holes */}
+              <Box className={styles.boardFace} />
+            </Box>
 
-      {/* Win / Draw screen */}
-      {phase === 'done' && (
-        <Box className={styles.winOverlay}>
-          <Box className={styles.celebration}>
-            {winner === 'draw' ? '🤝' : '🎉🏆🎉'}
+            <WinBadge
+              visible={phase === 'done' && showWinBadge}
+              onClose={() => setShowWinBadge(false)}
+              title={resultLabel}
+              celebration={winner === 'draw' ? '🤝' : '🎉🏆🎉'}
+              moves={gameMode === 'ai' && winner === 'red' ? moves : undefined}
+              score={gameMode === 'ai' && winner === 'red' ? score : undefined}
+              message={
+                selected && scoreSubmitted
+                  ? `Score saved for ${selected.name}!`
+                  : undefined
+              }
+            />
           </Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-            {resultLabel}
-          </Typography>
 
-          {gameMode === 'ai' && winner === 'red' && (
-            <Box className={styles.statsRow}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                  {moves}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Moves
-                </Typography>
-              </Box>
-              <Box sx={{ textAlign: 'center' }}>
-                <EmojiEventsIcon
-                  sx={{ fontSize: 28, color: '#DAA520', verticalAlign: 'middle' }}
-                />
-                <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                  {score}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Score
-                </Typography>
-              </Box>
+          {/* Win action buttons (below board, always accessible) */}
+          {phase === 'done' && (
+            <Box className={styles.actions}>
+              <Button variant="contained" startIcon={<ReplayIcon />} onClick={playAgain}>
+                Play Again
+              </Button>
+              <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={newGame}>
+                New Game
+              </Button>
             </Box>
           )}
 
-          {selected && scoreSubmitted && (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Score saved for {selected.name}!
-            </Typography>
+          {/* View Results toggle when badge is dismissed */}
+          {phase === 'done' && !showWinBadge && (
+            <Box sx={{ textAlign: 'center', mt: 1 }}>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<EmojiEventsIcon />}
+                onClick={() => setShowWinBadge(true)}
+              >
+                View Results
+              </Button>
+            </Box>
           )}
-
-          <Box className={styles.actions}>
-            <Button variant="contained" startIcon={<ReplayIcon />} onClick={playAgain}>
-              Play Again
-            </Button>
-            <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={newGame}>
-              New Game
-            </Button>
-          </Box>
         </Box>
-      )}
+      </Box>
     </PageContainer>
   );
 }

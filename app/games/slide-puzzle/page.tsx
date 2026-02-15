@@ -5,7 +5,6 @@ import {
   Box,
   Typography,
   Button,
-  IconButton,
   CircularProgress,
   Chip,
   Snackbar,
@@ -23,6 +22,7 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import ImageIcon from '@mui/icons-material/Image';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import CloseIcon from '@mui/icons-material/Close';
+import { WinBadge } from '@/app/components/WinBadge';
 import { PageContainer } from '@/app/components/PageContainer';
 import { FloatingLoveMessages } from '@/app/components/FloatingLoveMessages';
 import { useThemeMode } from '@/app/components/ThemeProvider';
@@ -403,54 +403,21 @@ export default function SlidePuzzlePage() {
               })}
             </Box>
 
-            {/* Win badge overlay (on top of puzzle) */}
-            {phase === 'win' && showWinBadge && (
-              <Box className={styles.winOverlay}>
-                <IconButton
-                  className={styles.closeBtn}
-                  onClick={() => setShowWinBadge(false)}
-                  sx={{ color: 'rgba(255,255,255,0.8)', '&:hover': { color: '#fff' } }}
-                  aria-label="Close results"
-                >
-                  <CloseIcon />
-                </IconButton>
-                <Box className={styles.celebration}>🎉🧩🎉</Box>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5, color: '#fff' }}>
-                  Puzzle Complete!
-                </Typography>
-
-                <Box className={styles.statsRow}>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: '#fff' }}>
-                      {moves}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                      Moves
-                    </Typography>
-                  </Box>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <EmojiEventsIcon sx={{ fontSize: 28, color: '#DAA520', verticalAlign: 'middle' }} />
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: '#fff' }}>
-                      {score}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                      Score
-                    </Typography>
-                  </Box>
-                </Box>
-
-                {autoSolved && (
-                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                    Auto-solved — no score recorded
-                  </Typography>
-                )}
-                {!autoSolved && selected && scoreSubmitted && (
-                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                    Score saved for {selected.name}!
-                  </Typography>
-                )}
-              </Box>
-            )}
+            <WinBadge
+              visible={phase === 'win' && showWinBadge}
+              onClose={() => setShowWinBadge(false)}
+              title="Puzzle Complete!"
+              celebration="🎉🧩🎉"
+              moves={moves}
+              score={score}
+              message={
+                autoSolved
+                  ? 'Auto-solved — no score recorded'
+                  : selected && scoreSubmitted
+                    ? `Score saved for ${selected.name}!`
+                    : undefined
+              }
+            />
           </Box>
 
           {/* Side column: hint/solve during play, view results toggle on win */}

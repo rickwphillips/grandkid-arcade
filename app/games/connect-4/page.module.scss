@@ -195,39 +195,10 @@ $board-gap: 6px;
   background: radial-gradient(circle at 35% 35%, #fde68a, #eab308);
 }
 
-/* Win overlay */
-.winOverlay {
-  text-align: center;
-  padding: 32px 0;
-  animation: fadeIn 0.5s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.celebration {
-  font-size: 3rem;
-  margin-bottom: 8px;
-}
-
-.statsRow {
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-  margin: 16px 0 24px;
-}
-
 .actions {
   display: flex;
   justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
+  margin-top: 16px;
 }

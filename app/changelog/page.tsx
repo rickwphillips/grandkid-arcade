@@ -29,6 +29,7 @@ const changelog: ChangelogEntry[] = [
       { icon: '🚫', text: 'Auto-solved puzzles skip score submission' },
       { icon: '📋', text: 'Image selection changed to a dropdown list' },
       { icon: '📱', text: 'Slide Puzzle and Picture Matcher scale to fit any screen size' },
+      { icon: '🧩', text: 'Shared WinBadge component — consistent win overlay across all games' },
     ],
   },
   {
