@@ -28,6 +28,7 @@ const changelog: ChangelogEntry[] = [
       { icon: '👀', text: 'Hint and Solve buttons hidden by default — reveal with Show Hint' },
       { icon: '🚫', text: 'Auto-solved puzzles skip score submission' },
       { icon: '📋', text: 'Image selection changed to a dropdown list' },
+      { icon: '📱', text: 'Slide Puzzle and Picture Matcher scale to fit any screen size' },
     ],
   },
   {
