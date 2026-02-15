@@ -18,6 +18,16 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.4.0',
+    date: '2026-02-15',
+    title: 'Game Settings',
+    changes: [
+      { icon: '🔇', text: 'Toggle love messages on/off per device from the admin page' },
+      { icon: '🎈', text: 'Toggle floating icons (hearts, balloons) on/off per device' },
+      { icon: '💾', text: 'Settings persist in browser localStorage — no login required' },
+    ],
+  },
+  {
     version: '1.3.0',
     date: '2026-02-15',
     title: 'Slide Puzzle Solver',
