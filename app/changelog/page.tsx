@@ -30,6 +30,7 @@ const changelog: ChangelogEntry[] = [
       { icon: '📋', text: 'Image selection changed to a dropdown list' },
       { icon: '📱', text: 'Slide Puzzle and Picture Matcher scale to fit any screen size' },
       { icon: '🧩', text: 'Shared WinBadge component — consistent win overlay across all games' },
+      { icon: '🃏', text: 'Hard mode Picture Matcher uses 6-column grid to fit phone screens' },
     ],
   },
   {
