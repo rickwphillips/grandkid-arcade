@@ -9,6 +9,7 @@ import type {
   PuzzleImage,
   PuzzleImageWithData,
   LoveMessage,
+  HangmanWord,
 } from './types';
 
 // API base URL — environment-aware
@@ -132,4 +133,16 @@ export const api = {
   // Love messages
   getLoveMessages: (name?: string) =>
     apiFetch<LoveMessage[]>(name ? `/love-messages?name=${encodeURIComponent(name)}` : '/love-messages'),
+
+  // Hangman words
+  getRandomWord: (difficulty: string) =>
+    apiFetch<HangmanWord>(`/hangman-words?difficulty=${encodeURIComponent(difficulty)}&random=1`),
+  getHangmanWords: () => apiFetch<HangmanWord[]>('/hangman-words'),
+  createHangmanWord: (data: { word: string; hint?: string; difficulty: string }) =>
+    apiFetch<{ success: boolean; id: number }>('/hangman-words', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  deleteHangmanWord: (id: number) =>
+    apiFetch<{ success: boolean }>(`/hangman-words?id=${id}`, { method: 'DELETE' }),
 };

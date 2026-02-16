@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import SettingsIcon from '@mui/icons-material/Settings';
+import AbcIcon from '@mui/icons-material/Abc';
 import Link from 'next/link';
 import { DarkModeToggle } from './components/DarkModeToggle';
 import { LogoutButton } from './components/LogoutButton';
@@ -94,15 +95,25 @@ export default function HomePage() {
               />
             )}
             {user?.role === 'admin' && (
-              <Chip
-                icon={<SettingsIcon />}
-                label="Admin"
-                variant="outlined"
-                component={Link}
-                href="/admin/puzzle-images/"
-                clickable
-                sx={{ ml: 'auto' }}
-              />
+              <>
+                <Chip
+                  icon={<SettingsIcon />}
+                  label="Images"
+                  variant="outlined"
+                  component={Link}
+                  href="/admin/puzzle-images/"
+                  clickable
+                  sx={{ ml: 'auto' }}
+                />
+                <Chip
+                  icon={<AbcIcon />}
+                  label="Words"
+                  variant="outlined"
+                  component={Link}
+                  href="/admin/hangman-words/"
+                  clickable
+                />
+              </>
             )}
           </Box>
         </Fade>

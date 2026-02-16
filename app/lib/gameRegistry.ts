@@ -35,6 +35,14 @@ export const games: GameDefinition[] = [
     ageRange: [4, 18],
     category: 'puzzle',
   },
+  {
+    slug: 'hangman',
+    title: 'Hangman',
+    description: 'Guess the word letter by letter!',
+    emoji: '🔤',
+    ageRange: [5, 18],
+    category: 'educational',
+  },
 ];
 
 export function getGame(slug: string): GameDefinition | undefined {

@@ -69,3 +69,12 @@ export interface LoveMessage {
   id: number;
   message: string;
 }
+
+// Hangman words
+export interface HangmanWord {
+  id: number;
+  word: string;
+  hint?: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  created_at: string;
+}

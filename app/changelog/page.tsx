@@ -18,6 +18,20 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.5.0',
+    date: '2026-02-16',
+    title: 'Hangman',
+    changes: [
+      { icon: '🔤', text: 'Added Hangman — guess the word letter by letter!' },
+      { icon: '🎈', text: 'Ella-Grace sees colorful balloons popping on wrong guesses' },
+      { icon: '🚀', text: 'Mason sees a rocket falling apart on wrong guesses' },
+      { icon: '🎚️', text: 'Three difficulty levels: Easy (single words), Medium (short phrases), Hard (long phrases)' },
+      { icon: '🐶', text: 'Words feature family names and dog names — Copper, Penny, Lulu, Luna & Stella' },
+      { icon: '⌨️', text: 'On-screen QWERTY keyboard with color-coded correct/wrong feedback' },
+      { icon: '🔧', text: 'Admin page for managing hangman words and phrases' },
+    ],
+  },
+  {
     version: '1.4.0',
     date: '2026-02-15',
     title: 'Game Settings',

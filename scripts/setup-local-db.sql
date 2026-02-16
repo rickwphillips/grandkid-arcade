@@ -92,6 +92,37 @@ INSERT INTO love_messages (message, grandkid_name) VALUES
     ('Penny wants to snuggle with you, Ella-Grace!', 'Ella-Grace'),
     ('Grampy''s favorite little princess — that''s you, Ella-Grace!', 'Ella-Grace');
 
+CREATE TABLE IF NOT EXISTS hangman_words (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    word VARCHAR(100) NOT NULL,
+    hint VARCHAR(255) DEFAULT NULL,
+    difficulty ENUM('easy', 'medium', 'hard') DEFAULT 'easy',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Hangman seed data — family names, dog names, loving phrases
+INSERT INTO hangman_words (word, hint, difficulty) VALUES
+    ('COPPER', 'One of Grampy''s dogs', 'easy'),
+    ('PENNY', 'One of Grampy''s dogs', 'easy'),
+    ('LULU', 'One of Grampy''s dogs', 'easy'),
+    ('LUNA', 'One of Grampy''s dogs', 'easy'),
+    ('STELLA', 'One of Grampy''s dogs', 'easy'),
+    ('MASON', 'Someone Grampy loves', 'easy'),
+    ('GRAMPY', 'He made this game for you!', 'easy'),
+    ('PUPPY', 'A young dog', 'easy'),
+    ('LOVE', 'Something Grampy gives you every day', 'easy'),
+    ('HUG', 'Something Grampy gives you', 'easy'),
+    ('ELLA GRACE', 'Grampy''s favorite girl', 'medium'),
+    ('GRAMPY LOVES YOU', 'Something that''s always true', 'medium'),
+    ('PUPPY KISSES', 'What Copper and Penny give you', 'medium'),
+    ('BEST FRIENDS', 'What you and Grampy are', 'medium'),
+    ('BEAR HUG', 'A really big hug from Grampy', 'medium'),
+    ('COPPER AND PENNY', 'Two of Grampy''s dogs', 'hard'),
+    ('LULU LUNA STELLA', 'Three of Grampy''s dogs', 'hard'),
+    ('GRAMPY IS SO PROUD', 'How Grampy feels about you', 'hard'),
+    ('MASON IS A SUPERHERO', 'Grampy''s favorite boy', 'hard'),
+    ('ELLA GRACE IS SUNSHINE', 'Grampy''s favorite girl', 'hard');
+
 -- Create app_user if it doesn't exist, then grant access
 CREATE USER IF NOT EXISTS 'app_user'@'localhost' IDENTIFIED BY 'devpassword';
 GRANT ALL PRIVILEGES ON grandkid_arcade.* TO 'app_user'@'localhost';
