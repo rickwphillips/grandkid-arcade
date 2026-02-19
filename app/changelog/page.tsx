@@ -18,6 +18,20 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.6.0',
+    date: '2026-02-19',
+    title: 'Word Search',
+    changes: [
+      { icon: '🔍', text: 'Added Word Search — find all the hidden words in the grid!' },
+      { icon: '🐾', text: '6 starter themes: Animals, Colors, Family, Nature, Dinosaurs, Space' },
+      { icon: '👆', text: 'Click the first and last letter of a word to select it' },
+      { icon: '🟢', text: 'Easy mode: tap a word in the list to find it instantly (no score for taps)' },
+      { icon: '👁️', text: 'Hard mode: word list is hidden — tap to reveal at 50% point penalty' },
+      { icon: '🏆', text: '100 pts per word found on grid + 500 pt completion bonus' },
+      { icon: '🔧', text: 'Admin page to create themes and manage words' },
+    ],
+  },
+  {
     version: '1.5.0',
     date: '2026-02-16',
     title: 'Hangman',
