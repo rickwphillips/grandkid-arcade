@@ -12,6 +12,7 @@ import {
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AbcIcon from '@mui/icons-material/Abc';
+import SearchIcon from '@mui/icons-material/Search';
 import Link from 'next/link';
 import { DarkModeToggle } from './components/DarkModeToggle';
 import { LogoutButton } from './components/LogoutButton';
@@ -111,6 +112,14 @@ export default function HomePage() {
                   variant="outlined"
                   component={Link}
                   href="/admin/hangman-words/"
+                  clickable
+                />
+                <Chip
+                  icon={<SearchIcon />}
+                  label="Word Search"
+                  variant="outlined"
+                  component={Link}
+                  href="/admin/word-search/"
                   clickable
                 />
               </>

@@ -88,6 +88,24 @@ CREATE TABLE IF NOT EXISTS hangman_words (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Word Search tables
+CREATE TABLE IF NOT EXISTS word_search_themes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    difficulty ENUM('easy','medium','hard') NOT NULL DEFAULT 'easy',
+    emoji VARCHAR(10) NOT NULL DEFAULT '🔍',
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS word_search_words (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    theme_id INT NOT NULL,
+    word VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (theme_id) REFERENCES word_search_themes(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Hangman seed data — family names, dog names, loving phrases
 INSERT INTO hangman_words (word, hint, difficulty) VALUES
     ('COPPER', 'One of Grampy''s dogs', 'easy'),

@@ -123,6 +123,57 @@ INSERT INTO hangman_words (word, hint, difficulty) VALUES
     ('MASON IS A SUPERHERO', 'Grampy''s favorite boy', 'hard'),
     ('ELLA GRACE IS SUNSHINE', 'Grampy''s favorite girl', 'hard');
 
+-- Word Search tables
+CREATE TABLE IF NOT EXISTS word_search_themes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    difficulty ENUM('easy','medium','hard') NOT NULL DEFAULT 'easy',
+    emoji VARCHAR(10) NOT NULL DEFAULT '🔍',
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS word_search_words (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    theme_id INT NOT NULL,
+    word VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (theme_id) REFERENCES word_search_themes(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Word Search seed themes
+INSERT INTO word_search_themes (title, difficulty, emoji, description) VALUES
+    ('Animals', 'easy', '🐾', 'Find fun animal names!'),
+    ('Colors', 'easy', '🎨', 'Find colors all around!'),
+    ('Nature', 'medium', '🌿', 'Things you find in nature'),
+    ('Family', 'easy', '❤️', 'People and pups Grampy loves'),
+    ('Dinosaurs', 'hard', '🦕', 'Roar! Find the dino words!'),
+    ('Space', 'hard', '🚀', 'Blast off into the cosmos!');
+
+-- Word Search seed words
+SET @aid = (SELECT id FROM word_search_themes WHERE title = 'Animals' LIMIT 1);
+SET @cid = (SELECT id FROM word_search_themes WHERE title = 'Colors' LIMIT 1);
+SET @nid = (SELECT id FROM word_search_themes WHERE title = 'Nature' LIMIT 1);
+SET @fid = (SELECT id FROM word_search_themes WHERE title = 'Family' LIMIT 1);
+SET @did = (SELECT id FROM word_search_themes WHERE title = 'Dinosaurs' LIMIT 1);
+SET @sid = (SELECT id FROM word_search_themes WHERE title = 'Space' LIMIT 1);
+
+INSERT INTO word_search_words (theme_id, word) VALUES
+    (@aid, 'CAT'), (@aid, 'DOG'), (@aid, 'BIRD'), (@aid, 'FISH'), (@aid, 'FROG'),
+    (@aid, 'BEAR'), (@aid, 'LION'), (@aid, 'DUCK'), (@aid, 'HORSE'),
+    (@cid, 'RED'), (@cid, 'BLUE'), (@cid, 'GREEN'), (@cid, 'YELLOW'), (@cid, 'PINK'),
+    (@cid, 'PURPLE'), (@cid, 'ORANGE'), (@cid, 'WHITE'), (@cid, 'BLACK'),
+    (@nid, 'TREE'), (@nid, 'FLOWER'), (@nid, 'RIVER'), (@nid, 'CLOUD'), (@nid, 'RAIN'),
+    (@nid, 'SUN'), (@nid, 'LEAF'), (@nid, 'ROCK'), (@nid, 'GRASS'),
+    (@fid, 'GRAMPY'), (@fid, 'MASON'), (@fid, 'ELLA'), (@fid, 'LOVE'), (@fid, 'HUG'),
+    (@fid, 'COPPER'), (@fid, 'PENNY'), (@fid, 'LULU'), (@fid, 'LUNA'), (@fid, 'STELLA'),
+    (@did, 'RAPTOR'), (@did, 'FOSSIL'), (@did, 'SCALES'), (@did, 'CLAWS'),
+    (@did, 'PLATES'), (@did, 'ANCIENT'), (@did, 'HUNTING'), (@did, 'GIGANTIC'),
+    (@did, 'FIERCE'), (@did, 'MIGHTY'), (@did, 'BONES'), (@did, 'ROAMING'),
+    (@sid, 'PLANET'), (@sid, 'ROCKET'), (@sid, 'SATURN'), (@sid, 'JUPITER'),
+    (@sid, 'COMET'), (@sid, 'GALAXY'), (@sid, 'METEOR'), (@sid, 'ORBIT'),
+    (@sid, 'NEBULA'), (@sid, 'COSMOS'), (@sid, 'ECLIPSE'), (@sid, 'SHUTTLE');
+
 -- Create app_user if it doesn't exist, then grant access
 CREATE USER IF NOT EXISTS 'app_user'@'localhost' IDENTIFIED BY 'devpassword';
 GRANT ALL PRIVILEGES ON grandkid_arcade.* TO 'app_user'@'localhost';

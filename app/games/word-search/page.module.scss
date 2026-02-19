@@ -1,0 +1,231 @@
+/* Shared game area background — same polka-dot pattern as hangman */
+.gameArea {
+  position: relative;
+  padding: 24px 12px;
+}
+
+.gameArea::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 16px;
+  opacity: 0.45;
+  background:
+    radial-gradient(circle 8px, #daa520 98%, transparent 100%) 0 0 / 40px 40px,
+    radial-gradient(circle 5px, #d2691e 98%, transparent 100%) 20px 20px / 40px 40px;
+}
+
+.gameAreaDark::before {
+  opacity: 0.18;
+}
+
+.gameArea > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Select phase ── */
+.themeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.themeCard {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* ── Play phase layout ── */
+.playLayout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.gridSection {
+  overflow-x: auto; /* safety for very small screens */
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  border-radius: 16px;
+  background-color: #fff;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* ── Letter grid ── */
+.gridWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.gridRow {
+  display: flex;
+  gap: 3px;
+}
+
+.gridCell {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: 'Courier New', Courier, monospace;
+  color: #1a1a1a;
+  border: 2px solid #d0c0a0;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  background-color: #fdf6ec;
+
+  &:hover {
+    transform: scale(1.08);
+    background-color: #fde8c4;
+    border-color: #d2691e;
+  }
+}
+
+/* Selected (first click) — amber */
+.cellSelected {
+  background-color: #ff8c00 !important;
+  border-color: #cc6600 !important;
+  color: #fff !important;
+  transform: scale(1.1);
+}
+
+/* Found word cells — green, stay highlighted */
+.cellFound {
+  background-color: #2e7d32 !important;
+  border-color: #1b5e20 !important;
+  color: #fff !important;
+  cursor: default;
+}
+
+/* Error flash — red */
+.cellError {
+  animation: flashRed 0.6s ease-out forwards;
+}
+
+@keyframes flashRed {
+  0%   { background-color: #d32f2f; border-color: #b71c1c; color: #fff; }
+  60%  { background-color: #ef9a9a; border-color: #e57373; color: #333; }
+  100% { background-color: transparent; border-color: transparent; }
+}
+
+/* ── Word list ── */
+.wordList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  width: 100%;
+}
+
+.wordItem {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: #3d2b1f;
+  background: #fdf6ec;
+  border: 1px solid #d0c0a0;
+  border-radius: 4px;
+  padding: 3px 10px;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease,
+    text-decoration 0.3s ease, opacity 0.3s ease, transform 0.1s ease;
+  /* reset button element defaults */
+  appearance: none;
+  line-height: inherit;
+}
+
+.wordItemClickable {
+  cursor: pointer;
+  border-style: dashed;
+
+  &:hover {
+    background: #fde8c4;
+    border-color: #d2691e;
+    color: #7a2e0a;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Hard mode — hidden: shows "??????", clickable to reveal */
+.wordItemHidden {
+  cursor: pointer;
+  color: #999;
+  background: #f0ece6;
+  border-style: dashed;
+  border-color: #c0b090;
+  letter-spacing: 0.15em;
+
+  &:hover {
+    background: #fff3e0;
+    border-color: #d2691e;
+    color: #7a2e0a;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Hard mode — revealed (peeked): shows word text, amber tint to signal penalty */
+.wordItemRevealed {
+  background: #fff8e1;
+  border-color: #f9a825;
+  color: #7a5200;
+}
+
+.wordFound {
+  color: #2e7d32 !important;
+  background: #e8f5e9 !important;
+  border-color: #a5d6a7 !important;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* ── Done actions ── */
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .gridCell {
+    width: 34px;
+    height: 34px;
+    font-size: 0.9rem;
+    border-radius: 4px;
+  }
+
+  .themeGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 380px) {
+  .gridCell {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+    border-radius: 3px;
+  }
+}

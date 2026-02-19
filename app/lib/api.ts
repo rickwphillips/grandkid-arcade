@@ -10,6 +10,9 @@ import type {
   PuzzleImageWithData,
   LoveMessage,
   HangmanWord,
+  WordSearchTheme,
+  WordSearchThemeWithWords,
+  WordSearchWord,
 } from './types';
 
 // API base URL — environment-aware
@@ -145,4 +148,23 @@ export const api = {
     }),
   deleteHangmanWord: (id: number) =>
     apiFetch<{ success: boolean }>(`/hangman-words?id=${id}`, { method: 'DELETE' }),
+
+  // Word Search themes
+  getWordSearchThemes: () => apiFetch<WordSearchTheme[]>('/word-search-themes'),
+  getWordSearchTheme: (id: number) =>
+    apiFetch<WordSearchThemeWithWords>(`/word-search-themes?id=${id}`),
+  createWordSearchTheme: (data: { title: string; difficulty: string; emoji: string; description?: string }) =>
+    apiFetch<WordSearchTheme>('/word-search-themes', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  deleteWordSearchTheme: (id: number) =>
+    apiFetch<{ success: boolean }>(`/word-search-themes?id=${id}`, { method: 'DELETE' }),
+  addWordSearchWord: (themeId: number, word: string) =>
+    apiFetch<WordSearchWord>(`/word-search-themes?id=${themeId}&words=1`, {
+      method: 'POST',
+      body: JSON.stringify({ word }),
+    }),
+  deleteWordSearchWord: (wordId: number) =>
+    apiFetch<{ success: boolean }>(`/word-search-themes?word_id=${wordId}`, { method: 'DELETE' }),
 };

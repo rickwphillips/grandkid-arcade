@@ -43,6 +43,14 @@ export const games: GameDefinition[] = [
     ageRange: [5, 18],
     category: 'educational',
   },
+  {
+    slug: 'word-search',
+    title: 'Word Search',
+    description: 'Find all the hidden words!',
+    emoji: '🔍',
+    ageRange: [5, 18],
+    category: 'educational',
+  },
 ];
 
 export function getGame(slug: string): GameDefinition | undefined {

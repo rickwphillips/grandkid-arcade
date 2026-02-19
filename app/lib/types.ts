@@ -78,3 +78,25 @@ export interface HangmanWord {
   difficulty: 'easy' | 'medium' | 'hard';
   created_at: string;
 }
+
+// Word Search
+export interface WordSearchTheme {
+  id: number;
+  title: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  emoji: string;
+  description: string;
+  word_count: number;
+  created_at: string;
+}
+
+export interface WordSearchWord {
+  id: number;
+  theme_id: number;
+  word: string;
+  created_at: string;
+}
+
+export interface WordSearchThemeWithWords extends WordSearchTheme {
+  words: WordSearchWord[];
+}
