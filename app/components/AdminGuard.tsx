@@ -11,7 +11,7 @@ const LOGIN_URL = isDev
 const HOME_URL = isDev ? '/' : '/app/projects/grandkid-games/';
 
 interface AuthUser {
-  id: number;
+  id: string;
   username: string;
   display_name: string;
   role: 'admin' | 'user';
@@ -59,7 +59,7 @@ export function AdminGuard({ children }: { children: ReactNode }) {
   const logout = () => {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     const currentPath = window.location.href;
-    window.location.href = `${LOGIN_URL}?redirect=${encodeURIComponent(currentPath)}`;
+    window.location.href = `${LOGIN_URL}?logout=1&redirect=${encodeURIComponent(currentPath)}`;
   };
 
   useEffect(() => {

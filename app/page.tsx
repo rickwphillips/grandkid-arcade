@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import SettingsIcon from '@mui/icons-material/Settings';
+import TuneIcon from '@mui/icons-material/Tune';
 import AbcIcon from '@mui/icons-material/Abc';
 import SearchIcon from '@mui/icons-material/Search';
 import Link from 'next/link';
@@ -95,6 +96,15 @@ export default function HomePage() {
                 clickable
               />
             )}
+            <Chip
+              icon={<TuneIcon />}
+              label="Settings"
+              variant="outlined"
+              component={Link}
+              href="/settings/"
+              clickable
+              sx={{ ml: 'auto' }}
+            />
             {user?.role === 'admin' && (
               <>
                 <Chip
@@ -104,7 +114,6 @@ export default function HomePage() {
                   component={Link}
                   href="/admin/puzzle-images/"
                   clickable
-                  sx={{ ml: 'auto' }}
                 />
                 <Chip
                   icon={<AbcIcon />}

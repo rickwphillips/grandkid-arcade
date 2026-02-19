@@ -18,6 +18,18 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.7.0',
+    date: '2026-02-19',
+    title: 'Settings & Auth',
+    changes: [
+      { icon: '⚙️', text: 'Game Settings moved to a dedicated page — all players can now adjust their settings' },
+      { icon: '🔧', text: 'Settings chip added to the home screen nav bar' },
+      { icon: '👤', text: 'Added "kids" user account — non-admin login for day-to-day play' },
+      { icon: '🔑', text: 'Fixed logout not working when switching between apps' },
+      { icon: '🆔', text: 'Auth user IDs upgraded to UUIDs' },
+    ],
+  },
+  {
     version: '1.6.0',
     date: '2026-02-19',
     title: 'Word Search',
