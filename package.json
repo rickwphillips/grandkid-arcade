@@ -1,6 +1,6 @@
 {
   "name": "grandkid-arcade",
-  "version": "0.1.0",
+  "version": "1.8.0",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3002",
@@ -8,7 +8,9 @@
     "start": "next start -p 3002",
     "lint": "eslint",
     "local-start": "bash ./scripts/start-dev.sh",
-    "local-stop": "bash ./scripts/stop-dev.sh"
+    "local-stop": "bash ./scripts/stop-dev.sh",
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -21,11 +23,17 @@
     "sass": "^1.97.3"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
-    "typescript": "^5"
+    "jsdom": "^28.1.0",
+    "typescript": "^5",
+    "vitest": "^4.0.18"
   }
 }

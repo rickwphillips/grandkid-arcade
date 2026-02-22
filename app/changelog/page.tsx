@@ -18,6 +18,17 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.8.0',
+    date: '2026-02-22',
+    title: 'Test Suite',
+    changes: [
+      { icon: '🧪', text: 'Added Vitest test suite — 115 tests across 10 files' },
+      { icon: '🎮', text: 'Unit tests for all 4 game engines: Connect 4, Hangman, Word Search, Slide Puzzle' },
+      { icon: '📦', text: 'Registry, hook, API, and component tests with full mocking' },
+      { icon: '⚡', text: 'npm run test:run for one-shot, npm run test for watch mode' },
+    ],
+  },
+  {
     version: '1.7.0',
     date: '2026-02-19',
     title: 'Settings & Auth',
