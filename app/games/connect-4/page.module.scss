@@ -2,6 +2,9 @@
 .gameArea {
   position: relative;
   padding: 24px 0;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .gameArea::before {
