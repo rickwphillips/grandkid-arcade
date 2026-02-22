@@ -18,6 +18,15 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.8.1',
+    date: '2026-02-22',
+    title: 'Coverage Reporting',
+    changes: [
+      { icon: '📊', text: 'V8 coverage reporting — npm run test:coverage shows per-file line/branch/function percentages' },
+      { icon: '✅', text: 'Game logic files at 93–100% line coverage; gameRegistry and GameCard at 100%' },
+    ],
+  },
+  {
     version: '1.8.0',
     date: '2026-02-22',
     title: 'Test Suite',
