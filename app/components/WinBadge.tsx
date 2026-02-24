@@ -36,9 +36,8 @@ export function WinBadge({
   return (
     <Box className={styles.overlay}>
       <IconButton
-        className={styles.closeBtn}
         onClick={onClose}
-        sx={{ color: 'rgba(255,255,255,0.8)', '&:hover': { color: '#fff' } }}
+        sx={{ position: 'absolute', top: 6, right: 6, color: 'rgba(255,255,255,0.8)', '&:hover': { color: '#fff' } }}
         aria-label="Close results"
       >
         <CloseIcon />

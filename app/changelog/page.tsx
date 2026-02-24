@@ -18,6 +18,28 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.8.3',
+    date: '2026-02-24',
+    title: 'Connect 4 Polish & UI Fixes',
+    changes: [
+      { icon: '⏱️', text: 'Connect 4 — win overlay, action buttons, and turn indicator all delay 1.2s so you can see the winning move before results appear' },
+      { icon: '🏆', text: 'Connect 4 — turn indicator changes to "Red Wins!" / "Yellow Wins!" instead of disappearing' },
+      { icon: '🔢', text: 'Connect 4 — move counter now counts rounds (one per player turn), not individual drops' },
+      { icon: '🕳️', text: 'Connect 4 — removed outer glow shadow on board, added inner depth shadow on holes' },
+      { icon: '✖️', text: 'Win badge close button now correctly anchors to top-right corner' },
+      { icon: '📐', text: 'Win badge width constrained to the game board on all games' },
+      { icon: '🎲', text: 'Slide Puzzle — initial image is now randomly selected each time' },
+    ],
+  },
+  {
+    version: '1.8.2',
+    date: '2026-02-23',
+    title: 'Versioned DB Migrations',
+    changes: [
+      { icon: '🗄️', text: 'Deploy script now applies versioned DB migrations automatically — schema changes run before PHP deploy and are tracked in schema_migrations table' },
+    ],
+  },
+  {
     version: '1.8.1',
     date: '2026-02-22',
     title: 'Coverage Reporting',

@@ -45,6 +45,7 @@ export default function Connect4Page() {
   const [aiThinking, setAiThinking] = useState(false);
   const [lastDrop, setLastDrop] = useState<{ row: number; col: number } | null>(null);
   const [showWinBadge, setShowWinBadge] = useState(false);
+  const [showWinActions, setShowWinActions] = useState(false);
   const aiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Cleanup AI timer on unmount
@@ -54,9 +55,14 @@ export default function Connect4Page() {
     };
   }, []);
 
-  // Show win badge when entering done phase
+  // Show win badge + actions when entering done phase — brief delay so the winning state is visible first
   useEffect(() => {
-    if (phase === 'done') setShowWinBadge(true);
+    if (phase !== 'done') return;
+    const t = setTimeout(() => {
+      setShowWinBadge(true);
+      setShowWinActions(true);
+    }, 1200);
+    return () => clearTimeout(t);
   }, [phase]);
 
   const startGame = useCallback((m: Mode) => {
@@ -85,10 +91,9 @@ export default function Connect4Page() {
 
       playDrop();
       const { newBoard, row } = result;
-      const newMoves = moves + 1;
       setLastDrop({ row, col });
       setBoard(newBoard);
-      setMoves(newMoves);
+      if (currentPlayer === 'red') setMoves((m) => m + 1);
 
       // Check win
       const winPositions = checkWin(newBoard, row, col);
@@ -125,7 +130,6 @@ export default function Connect4Page() {
           playDrop();
           setLastDrop({ row: aiResult.row, col: aiCol });
           setBoard(aiResult.newBoard);
-          setMoves((m) => m + 1);
 
           const aiWin = checkWin(aiResult.newBoard, aiResult.row, aiCol);
           if (aiWin) {
@@ -143,7 +147,7 @@ export default function Connect4Page() {
         }, 500);
       }
     },
-    [board, currentPlayer, phase, winner, aiThinking, gameMode, moves],
+    [board, currentPlayer, phase, winner, aiThinking, gameMode],
   );
 
   // Submit score when grandkid beats AI
@@ -173,6 +177,7 @@ export default function Connect4Page() {
     setAiThinking(false);
     setLastDrop(null);
     setShowWinBadge(false);
+    setShowWinActions(false);
     setPhase('play');
   }, []);
 
@@ -188,6 +193,7 @@ export default function Connect4Page() {
     setAiThinking(false);
     setLastDrop(null);
     setShowWinBadge(false);
+    setShowWinActions(false);
   }, []);
 
   const isWinCell = (row: number, col: number) =>
@@ -261,25 +267,38 @@ export default function Connect4Page() {
         <Box className={`${styles.gameArea} ${themeMode === 'dark' ? styles.gameAreaDark : ''}`}>
           {/* Turn indicator + move counter */}
           <Box sx={{ textAlign: 'center', mb: 2 }}>
-            {phase === 'play' && (
-              <Box className={styles.turnIndicator}>
-                <span
-                  className={`${styles.turnDot} ${
-                    currentPlayer === 'red' ? styles.turnDotRed : styles.turnDotYellow
-                  }`}
-                />
-                <Typography variant="h6" color="text.secondary">
-                  {turnLabel}
-                </Typography>
-              </Box>
-            )}
+            <Box className={styles.turnIndicator}>
+              {phase !== 'done' || !winner || winner === 'draw' ? (
+                <>
+                  <span
+                    className={`${styles.turnDot} ${
+                      currentPlayer === 'red' ? styles.turnDotRed : styles.turnDotYellow
+                    }`}
+                  />
+                  <Typography variant="h6" color="text.secondary">
+                    {phase === 'done' && winner === 'draw' ? 'Draw!' : turnLabel}
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <span
+                    className={`${styles.turnDot} ${
+                      winner === 'red' ? styles.turnDotRed : styles.turnDotYellow
+                    }`}
+                  />
+                  <Typography variant="h6" color="text.secondary">
+                    {winner === 'red' ? 'Red Wins!' : 'Yellow Wins!'}
+                  </Typography>
+                </>
+              )}
+            </Box>
             <Typography variant="body2" color="text.secondary">
               Moves: {moves}
             </Typography>
           </Box>
 
           {/* Board with win overlay */}
-          <Box sx={{ position: 'relative' }}>
+          <Box sx={{ position: 'relative', maxWidth: 420, mx: 'auto' }}>
             <Box className={styles.board}>
               {Array.from({ length: COLS }, (_, col) => (
                 <Box
@@ -324,7 +343,7 @@ export default function Connect4Page() {
               onClose={() => setShowWinBadge(false)}
               title={resultLabel}
               celebration={winner === 'draw' ? '🤝' : '🎉🏆🎉'}
-              moves={gameMode === 'ai' && winner === 'red' ? moves : undefined}
+              moves={moves}
               score={gameMode === 'ai' && winner === 'red' ? score : undefined}
               message={
                 selected && scoreSubmitted
@@ -335,7 +354,7 @@ export default function Connect4Page() {
           </Box>
 
           {/* Win action buttons (below board, always accessible) */}
-          {phase === 'done' && (
+          {showWinActions && (
             <Box className={styles.actions}>
               <Button variant="contained" startIcon={<ReplayIcon />} onClick={playAgain}>
                 Play Again
@@ -347,7 +366,7 @@ export default function Connect4Page() {
           )}
 
           {/* View Results toggle when badge is dismissed */}
-          {phase === 'done' && !showWinBadge && (
+          {showWinActions && !showWinBadge && (
             <Box sx={{ textAlign: 'center', mt: 1 }}>
               <Button
                 size="small"

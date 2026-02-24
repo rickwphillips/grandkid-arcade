@@ -106,7 +106,7 @@ export default function SlidePuzzlePage() {
       .then((list) => {
         if (!cancelled) {
           setImages(list);
-          if (list.length > 0) setSelectedImageId(list[0].id);
+          if (list.length > 0) setSelectedImageId(list[Math.floor(Math.random() * list.length)].id);
         }
       })
       .catch(() => {

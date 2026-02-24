@@ -1,6 +1,6 @@
 {
   "name": "grandkid-arcade",
-  "version": "1.8.1",
+  "version": "1.8.3",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3002",

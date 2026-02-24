@@ -239,6 +239,8 @@ export default function PictureMatcherPage() {
   // --- Gameplay + Done ---
   const gridClass =
     config.cols === 3 ? styles.grid3 : config.cols === 6 ? styles.grid6 : styles.grid4;
+  const gridMaxWidth =
+    config.cols === 3 ? 260 : config.cols === 6 ? 480 : 400;
 
   return (
     <PageContainer title="Picture Matcher" subtitle="Find all the matching pairs!">
@@ -255,7 +257,7 @@ export default function PictureMatcherPage() {
           </Box>
 
           {/* Card grid with win overlay */}
-          <Box sx={{ position: 'relative' }}>
+          <Box sx={{ position: 'relative', maxWidth: gridMaxWidth, mx: 'auto' }}>
             <Box className={gridClass} sx={locked ? { pointerEvents: 'none' } : undefined}>
               {cards.map((card, index) => {
                 const isFlipped = flipped.includes(index) || matched.has(card.matchKey);

@@ -230,6 +230,8 @@ export default function HangmanPage() {
           <FloatingLoveMessages name={selected.name} active={phase === 'play'} />
         )}
         <Box className={`${styles.gameArea} ${themeMode === 'dark' ? styles.gameAreaDark : ''}`}>
+          {/* Game content + win overlay */}
+          <Box sx={{ position: 'relative', maxWidth: 420, mx: 'auto' }}>
           {/* Wrong count indicator */}
           <Box sx={{ textAlign: 'center', mb: 1 }}>
             <Typography variant="body2" color="text.secondary">
@@ -340,6 +342,7 @@ export default function HangmanPage() {
                   : undefined
             }
           />
+          </Box>
 
           {/* Action buttons */}
           {(phase === 'win' || phase === 'lose') && (
