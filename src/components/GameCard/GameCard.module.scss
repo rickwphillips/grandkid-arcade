@@ -1,0 +1,29 @@
+.card {
+  background-color: #0f172a; // slate-900
+  border: 1px solid #1e293b;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.2);
+    
+    .thumbnail {
+      transform: scale(1.1);
+    }
+  }
+}
+
+.thumbnailContainer {
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background-color: #1e293b;
+}
+
+.thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}

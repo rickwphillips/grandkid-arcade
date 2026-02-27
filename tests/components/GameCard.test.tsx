@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { GameCard } from '@/app/components/GameCard';
+import { GameCard } from '@/src/components/GameCard';
 import type { GameDefinition } from '@/app/lib/gameRegistry';
 
 const testGame: GameDefinition = {

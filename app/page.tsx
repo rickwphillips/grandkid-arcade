@@ -19,10 +19,11 @@ import { DarkModeToggle } from './components/DarkModeToggle';
 import { LogoutButton } from './components/LogoutButton';
 import { useAuth } from './components/AuthGuard';
 import { EmptyState } from './components/EmptyState';
-import { GameCard } from './components/GameCard';
+import GameCard  from '../src/components/GameCard/GameCard';
 import { useGrandkid } from './lib/useGrandkid';
 import { games } from './lib/gameRegistry';
 import { APP_VERSION } from './lib/version';
+
 import styles from './page.module.scss';
 
 export default function HomePage() {
