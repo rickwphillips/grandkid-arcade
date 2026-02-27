@@ -1,21 +1,30 @@
-# Grandkid Games
+# 🕹️ Grandkid Arcade
 
-Browser-based mini-games personalized for grandkids. Built with Next.js 16, Material UI, and a PHP/MySQL backend.
+A modern, responsive, and lightweight web-based arcade interface built with **React**, **TypeScript**, and **Tailwind CSS**. Designed to provide a clean launcher experience for web-based games and emulated content.
 
-## Quick Start
+## 🚀 Features
 
-```bash
-npm install
-mysql -u root < scripts/setup-local-db.sql
-npm run dev
-```
+* **Dynamic Game Grid**: Automatic layout of game cards with smooth hover transitions and metadata displays.
+* **Category Filtering**: Quick-access filters for Action, Adventure, Puzzle, and more.
+* **Real-time Search**: Instant, optimized filtering of the game library via the search bar.
+* **Type-Safe Architecture**: Built with TypeScript for reliable data handling and predictable component props.
+* **Responsive Design**: Fully optimized for desktops, tablets, and arcade cabinet displays using Tailwind CSS.
+* **Icon Integration**: High-quality visual cues powered by `lucide-react`.
 
-Then open http://localhost:3002 (requires auth token from portfolio login at localhost:3000).
+## 🛠️ Tech Stack
 
-## Adding Games
+* **Framework:** [React 18](https://reactjs.org/)
+* **Build Tool:** [Vite](https://vitejs.dev/)
+* **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+* **Icons:** [Lucide React](https://lucide.dev/)
+* **Language:** [TypeScript](https://www.typescriptlang.org/)
 
-1. Register the game in `app/lib/gameRegistry.ts`
-2. Create `app/games/<slug>/page.tsx`
-3. Use the `useGrandkid()` hook and `api.submitScore()` for scoring
+## 📂 Project Structure
 
-See `CLAUDE.md` for full architecture details.
+```text
+src/
+├── components/       # UI Components (GameCard, CategoryFilter, SearchBar)
+├── data/             # Game metadata and library definitions (games.ts)
+├── types/            # TypeScript interfaces and types
+├── App.tsx           # Main application logic and state management
+└── main.tsx          # Entry point
