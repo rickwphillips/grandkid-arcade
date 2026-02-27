@@ -1,0 +1,73 @@
+@startuml connect-4-components
+title Connect-4 — Component Architecture
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FAFAFA
+skinparam component {
+  BackgroundColor #EEF2FF
+  BorderColor #6366F1
+  FontColor #1E1B4B
+}
+skinparam package {
+  BackgroundColor #F0FDF4
+  BorderColor #16A34A
+  FontColor #14532D
+}
+skinparam note {
+  BackgroundColor #FFFBEB
+  BorderColor #D97706
+}
+
+package "app/games/connect-4/" {
+  component "page.tsx\n**Connect4Page**" as Page
+
+  package "Game State" {
+    component "phase\n'select' | 'play' | 'done'" as PhaseState
+    component "board: Cell[][] (6×7)\ncurrentPlayer: 'red'|'yellow'" as BoardState
+    component "moves: number\nwinner: 'red'|'yellow'|'draw'|null\nwinCells: [row,col][]" as WinState
+    component "gameMode: 'ai' | 'friend'\naiThinking: boolean\nshowWinBadge / showWinActions" as ModeState
+  }
+
+  component "**gameLogic.ts**" as Logic
+  note right of Logic
+    createBoard() → Cell[][]
+    dropPiece(board, col, player)
+      → { newBoard, row } | null
+    checkWin(board, row, col)
+      → [row,col][] | null
+    isBoardFull(board) → boolean
+    getAIMove(board, ai, human)
+      → col (win > block > center > random)
+    calcScore(moves)
+      → max(0, 100 − (moves−7)×4)
+  end note
+
+  component "**sounds.ts**" as Sounds
+  note right of Sounds
+    playDrop()   200 Hz triangle
+    playWin()    5-note ascending
+    playInvalid() buzz
+  end note
+}
+
+package "app/components/ & lib/" {
+  component "**WinBadge.tsx**\noverlay on win/draw" as WinBadge
+  component "**FloatingLoveMessages.tsx**\nactive during play phase" as FLM
+  component "**useGrandkid()**\nselected grandkid from localStorage" as Hook
+  component "**api.ts**\nsubmitScore()" as API
+}
+
+Page --> Logic : dropPiece / checkWin\ngetAIMove / calcScore
+Page --> Sounds : plays on drop/win/invalid
+Page --> WinBadge : visible after 1200ms delay
+Page --> FLM : active={phase==='play'}
+Page --> Hook : selected grandkid ID
+Page --> API : submitScore\n(red wins, ai mode only)
+
+note bottom of Page
+  **AI Turn Flow** (500ms delay):
+  getAIMove() → dropPiece() → checkWin()
+  Disabled via aiThinking flag during AI turn
+end note
+
+@enduml

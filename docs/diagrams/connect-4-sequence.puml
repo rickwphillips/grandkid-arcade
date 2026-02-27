@@ -1,0 +1,173 @@
+@startuml connect-4-sequence
+title Connect-4 — Sequence Diagram (vs AI)
+
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 8
+skinparam sequence {
+  ParticipantBackgroundColor #EEF2FF
+  ParticipantBorderColor #6366F1
+  LifeLineBorderColor #A5B4FC
+  ActorBackgroundColor #F0FDF4
+  ActorBorderColor #16A34A
+}
+
+actor User
+participant "Connect4Page" as Page
+participant "gameLogic.ts" as Logic
+participant "sounds.ts" as Audio
+participant "api.ts" as API
+
+activate User
+
+== Phase: select ==
+
+User -> Page : click "vs Computer"
+activate Page
+  Page -> Logic : createBoard()
+  activate Logic
+  return Cell[][] (6x7 empty)
+
+  Page -> Page : setGameMode / setPhase('play') / setCurrentPlayer('red')
+  activate Page
+  deactivate Page
+deactivate Page
+
+== Phase: play - Human Turn (Red) ==
+
+User -> Page : click column C
+activate Page
+  Page -> Page : validate: phase=play, not aiThinking, column not full
+  activate Page
+  deactivate Page
+
+  Page -> Logic : dropPiece(board, C, 'red')
+  activate Logic
+  return { newBoard, row }
+
+  Page -> Audio : playDrop()
+  activate Audio
+  return
+
+  Page -> Page : setBoard / setLastDrop / setMoves(+1)
+  activate Page
+  deactivate Page
+
+  Page -> Logic : checkWin(newBoard, row, C)
+  activate Logic
+  return winCells | null
+
+  alt winCells returned
+    Page -> Audio : playWin()
+    activate Audio
+    return
+
+    Page -> Page : setWinner('red') / setPhase('done')
+    activate Page
+    deactivate Page
+
+  else null - check draw
+    Page -> Logic : isBoardFull(newBoard)
+    activate Logic
+    return boolean
+
+    alt board full
+      Page -> Page : setWinner('draw') / setPhase('done')
+      activate Page
+      deactivate Page
+    else continue
+      Page -> Page : setCurrentPlayer('yellow')
+      activate Page
+      deactivate Page
+    end
+  end
+deactivate Page
+
+== Phase: play - AI Turn (500ms setTimeout) ==
+
+[-> Page : timer fires
+activate Page
+  Page -> Page : setAiThinking(true)
+  activate Page
+  deactivate Page
+
+  Page -> Logic : getAIMove(board, 'yellow', 'red')
+  activate Logic
+  note right of Logic
+    1. Win move?
+    2. Block human?
+    3. Center columns
+    4. Random fallback
+  end note
+  return bestCol
+
+  Page -> Logic : dropPiece(board, bestCol, 'yellow')
+  activate Logic
+  return { newBoard, row }
+
+  Page -> Audio : playDrop()
+  activate Audio
+  return
+
+  Page -> Logic : checkWin(newBoard, row, bestCol)
+  activate Logic
+  return winCells | null
+
+  alt winCells returned
+    Page -> Page : setWinner('yellow') / setPhase('done')
+    activate Page
+    deactivate Page
+  else null - check draw
+    Page -> Logic : isBoardFull(newBoard)
+    activate Logic
+    return boolean
+
+    alt board full
+      Page -> Page : setWinner('draw') / setPhase('done')
+      activate Page
+      deactivate Page
+    else continue
+      Page -> Page : setCurrentPlayer('red')
+      activate Page
+      deactivate Page
+    end
+  end
+
+  Page -> Page : setAiThinking(false)
+  activate Page
+  deactivate Page
+deactivate Page
+
+== Phase: done ==
+
+[-> Page : useEffect: phase===done
+activate Page
+  Page -> Page : setTimeout 1200ms - setShowWinBadge / setShowWinActions
+  activate Page
+  deactivate Page
+
+  alt red won vs AI
+    Page -> Logic : calcScore(moves)
+    activate Logic
+    return max(0, 100 - (moves-7)*4)
+
+    Page -> API : submitScore({ grandkid_id, 'connect-4', score })
+    activate API
+    return 200 OK
+  end
+deactivate Page
+
+User -> Page : click "Play Again"
+activate Page
+  Page -> Logic : createBoard()
+  activate Logic
+  return empty board
+
+  Page -> Page : reset / setPhase('play')
+  activate Page
+  deactivate Page
+deactivate Page
+
+deactivate User
+
+@enduml

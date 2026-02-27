@@ -1,0 +1,89 @@
+@startuml slide-puzzle-components
+title Slide Puzzle — Component Architecture
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FAFAFA
+skinparam component {
+  BackgroundColor #F0FDF4
+  BorderColor #16A34A
+  FontColor #14532D
+}
+skinparam package {
+  BackgroundColor #ECFDF5
+  BorderColor #059669
+  FontColor #064E3B
+}
+skinparam note {
+  BackgroundColor #FFFBEB
+  BorderColor #D97706
+}
+
+package "app/games/slide-puzzle/" {
+  component "page.tsx\n**SlidePuzzlePage**" as Page
+
+  package "Game State" {
+    component "phase: 'select' | 'play' | 'win'" as PhaseState
+    component "board: number[]\n(flat array, gridSize²)\nvalue = tile, last = empty" as BoardState
+    component "gridSize: 3|4|5|6\nselectedImageId: number|null\nimageDataUri: string (base64)" as ConfigState
+    component "moves: number\nshowHint: boolean\nsolving: boolean\nautoSolved: boolean" as PlayState
+  }
+
+  component "**puzzleLogic.ts**" as Logic
+  note right of Logic
+    generateBoard(gridSize)
+      Fisher-Yates shuffle
+      + solvability check
+      (inversion count + row parity)
+    canMove(board, gridSize, index)
+      → adjacent to empty?
+    moveTile(board, gridSize, index)
+      → new board (swap with empty)
+    isSolved(board)
+      → board === [0,1,...,N²−1]
+    calcScore(moves, gridSize)
+      par = {3:25, 4:80, 5:150, 6:250}
+      → min(max, maxScore × par / moves)
+    solvePuzzle(board, gridSize) ← IDA*
+      Manhattan dist + linear conflict
+      → tile-click sequence | null
+      (supported: gridSize ≤ 5)
+  end note
+
+  component "**sounds.ts**" as Sounds
+  note right of Sounds
+    playSlide()
+    playWin()
+  end note
+}
+
+package "app/components/ & lib/" {
+  component "**WinBadge.tsx**\nresult overlay on solve" as WinBadge
+  component "**FloatingLoveMessages.tsx**\nactive during play" as FLM
+  component "**useGrandkid()**" as Hook
+  component "**api.ts**" as API
+  note right of API
+    getPuzzleImages() → image list
+    getPuzzleImage(id) → base64
+    submitScore() — manual solves only
+  end note
+}
+
+Page --> Logic : generateBoard / canMove\nmoveTile / isSolved / calcScore
+Page --> Logic : solvePuzzle() → step sequence
+Page --> Sounds : playSlide on each move
+Page --> WinBadge : visible on win
+Page --> FLM : active={phase==='play'}
+Page --> Hook : selected grandkid
+Page --> API : fetch images on mount\nsubmitScore if not autoSolved
+
+note bottom of Page
+  **Tile rendering**: each tile is absolutely positioned
+  backgroundImage clipped via backgroundPosition
+  to show correct sub-region of full image
+
+  **Auto-solve animation**: setInterval 250ms
+  executes IDA* move sequence step-by-step
+  Score NOT submitted if autoSolved=true
+end note
+
+@enduml

@@ -1,0 +1,88 @@
+@startuml hangman-components
+title Hangman — Component Architecture
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FAFAFA
+skinparam component {
+  BackgroundColor #FFF7ED
+  BorderColor #EA580C
+  FontColor #431407
+}
+skinparam package {
+  BackgroundColor #FEF2F2
+  BorderColor #DC2626
+  FontColor #7F1D1D
+}
+skinparam note {
+  BackgroundColor #FFFBEB
+  BorderColor #D97706
+}
+
+package "app/games/hangman/" {
+  component "page.tsx\n**HangmanPage**" as Page
+
+  package "Game State" {
+    component "phase\n'select' | 'play' | 'win' | 'lose'" as PhaseState
+    component "currentWord: HangmanWord | null\n{ word, difficulty, hint? }" as WordState
+    component "guessed: Set<string>\n(uppercase letters guessed)" as GuessState
+    component "loading: boolean\nerror: string\nshowWinBadge: boolean\njustPopped: number | null" as UIState
+  }
+
+  component "**gameLogic.ts**" as Logic
+  note right of Logic
+    guessLetter(guessed, letter)
+      → new Set (add uppercase letter)
+    getWrongCount(word, guessed)
+      → number of misses (0–6)
+    isWon(word, guessed)
+      → all word letters guessed?
+    isLost(wrongCount)
+      → wrongCount >= MAX_WRONG (6)
+    getMaskedWord(word, guessed)
+      → "_ Y T H _ _" (keep spaces/punct)
+    calcScore(wrongCount, letterCount)
+      → max(10, letters×100 − wrong×15)
+  end note
+
+  component "**sounds.ts**" as Sounds
+  note right of Sounds
+    playCorrect()
+    playWrong()
+    playWin()
+    playLose()
+  end note
+
+  package "Animations (conditional)" {
+    component "**BalloonAnimation**\n(default: 6 balloons pop on wrong)" as Balloon
+    component "**RocketAnimation**\n(Mason only: 6 parts detach)" as Rocket
+  }
+}
+
+package "app/components/ & lib/" {
+  component "**WinBadge.tsx**\nresult overlay (win or lose)" as WinBadge
+  component "**FloatingLoveMessages.tsx**\nactive during play" as FLM
+  component "**useGrandkid()**\nselected grandkid" as Hook
+  component "**api.ts**" as API
+  note right of API
+    getRandomWord(difficulty)
+    submitScore() — win only
+  end note
+}
+
+Page --> Logic : validate/score each guess
+Page --> Sounds : plays on correct/wrong/win/lose
+Page --> Balloon : wrongCount (default)
+Page --> Rocket : wrongCount (Mason)
+Page --> WinBadge : visible on win or lose
+Page --> FLM : active={phase==='play'}
+Page --> Hook : selected grandkid name\n(drives Balloon vs Rocket choice)
+Page --> API : getRandomWord on start\nsubmitScore on win
+
+note bottom of Page
+  **On-screen keyboard**: 26 letter buttons
+  Also handles physical keydown events
+  Letters disabled once guessed
+  MAX_WRONG = 6 (both animations)
+end note
+
+@enduml

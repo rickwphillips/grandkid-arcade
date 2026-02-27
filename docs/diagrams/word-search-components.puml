@@ -1,0 +1,101 @@
+@startuml word-search-components
+title Word Search — Component Architecture
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FAFAFA
+skinparam component {
+  BackgroundColor #FFF1F2
+  BorderColor #E11D48
+  FontColor #4C0519
+}
+skinparam package {
+  BackgroundColor #FFF5F5
+  BorderColor #BE123C
+  FontColor #881337
+}
+skinparam note {
+  BackgroundColor #FFFBEB
+  BorderColor #D97706
+}
+
+package "app/games/word-search/" {
+  component "page.tsx\n**WordSearchPage**" as Page
+
+  package "Game State" {
+    component "phase: 'select' | 'play' | 'done'" as PhaseState
+    component "themes: WordSearchTheme[]\ncurrentTheme: WordSearchThemeWithWords" as ThemeState
+    component "grid: Grid | null\n{ cells: string[][], placedWords: PlacedWord[] }" as GridState
+    component "foundWords: Set<string>\nfoundCells: Set<string> 'r,c'\nrevealedWords: Set<string> (hard)" as FoundState
+    component "selStart: [r,c] | null\nerrorCells: Set<string>\nearnedPoints: number\nscore: number" as SelectState
+  }
+
+  component "**gameLogic.ts**" as Logic
+  note right of Logic
+    generateGrid(words, difficulty)
+      Filter valid words (≥3 chars, no spaces)
+      Sort by length, select up to maxWords
+      Place in N×N grid (8 directions)
+      50 placement attempts per word
+      Fill remaining cells with random letters
+    checkSelection(grid, start, end)
+      Validate straight line (8 directions)
+      Check forward + reverse against placedWords
+      → matched word string | null
+    getPlacedWordCells(placedWord)
+      → 'r,c' key array
+    Difficulty config:
+      easy:   8×8,  maxWords=6
+      medium: 10×10, maxWords=8
+      hard:   12×12, maxWords=12
+  end note
+
+  component "**sounds.ts**" as Sounds
+  note right of Sounds
+    playFound()
+    playWin()
+  end note
+}
+
+package "Scoring Rules" {
+  component "Grid find: +100 pts" as S1
+  component "Hard reveal: −50% on find" as S2
+  component "Easy list tap: 0 pts" as S3
+  component "Completion bonus: +500\n(all words via grid)" as S4
+}
+
+package "app/components/ & lib/" {
+  component "**WinBadge.tsx**" as WinBadge
+  component "**FloatingLoveMessages.tsx**" as FLM
+  component "**useGrandkid()**" as Hook
+  component "**api.ts**" as API
+  note right of API
+    getWordSearchThemes() → list
+    getWordSearchTheme(id) → words
+    submitScore() — always on win
+  end note
+}
+
+Page --> Logic : generateGrid on theme select\ncheckSelection on cell clicks
+Page --> Sounds : playFound / playWin
+Page --> WinBadge : visible on done
+Page --> FLM : active={phase==='play'}
+Page --> Hook : selected grandkid
+Page --> API : fetch themes on mount\nsubmitScore on win
+
+S1 --> Page
+S2 --> Page
+S3 --> Page
+S4 --> Page
+
+note bottom of Page
+  **Selection model**: click cell A → click cell B
+  → checkSelection validates straight line
+  Error cells flash red 600ms on miss
+
+  **Difficulty modes**:
+  Easy: word list is clickable (auto-find, 0 pts)
+  Medium: grid selection only
+  Hard: words hidden, reveal costs 50% score
+end note
+
+@enduml

@@ -1,0 +1,138 @@
+@startuml hangman-sequence
+title Hangman - Sequence Diagram (win path)
+
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 8
+skinparam sequence {
+  ParticipantBackgroundColor #FFF7ED
+  ParticipantBorderColor #EA580C
+  LifeLineBorderColor #FDBA74
+  ActorBackgroundColor #FEF2F2
+  ActorBorderColor #DC2626
+}
+
+actor User
+participant "HangmanPage" as Page
+participant "gameLogic.ts" as Logic
+participant "api.ts" as API
+participant "sounds.ts" as Audio
+
+activate User
+
+== Phase: select ==
+
+User -> Page : click difficulty
+activate Page
+  Page -> API : getRandomWord(difficulty)
+  activate API
+  return { word, difficulty, hint? }
+
+  Page -> Page : setCurrentWord / setGuessed(new Set()) / setPhase('play')
+  activate Page
+  deactivate Page
+deactivate Page
+
+== Phase: play ==
+
+loop each letter guess
+
+  User -> Page : click letter / press key
+  activate Page
+    Page -> Page : validate: phase=play, not already guessed
+    activate Page
+    deactivate Page
+
+    Page -> Logic : guessLetter(guessed, letter)
+    activate Logic
+    return updated Set<string>
+
+    Page -> Page : setGuessed(updated)
+    activate Page
+    deactivate Page
+
+    alt letter in word
+      Page -> Audio : playCorrect()
+      activate Audio
+      return
+
+      Page -> Logic : isWon(word, updatedGuessed)
+      activate Logic
+      return true / false
+
+      alt all letters found
+        Page -> Audio : playWin()
+        activate Audio
+        return
+
+        note over Page : 300ms delay
+        Page -> Page : setPhase('win')
+        activate Page
+        deactivate Page
+      end
+
+    else letter NOT in word
+      Page -> Audio : playWrong()
+      activate Audio
+      return
+
+      Page -> Page : setJustPopped(wrongIdx)
+      activate Page
+      deactivate Page
+
+      Page -> Logic : isLost(wrongCount)
+      activate Logic
+      return true / false
+
+      alt 6 wrong guesses
+        Page -> Audio : playLose()
+        activate Audio
+        return
+
+        note over Page : 500ms delay
+        Page -> Page : setPhase('lose')
+        activate Page
+        deactivate Page
+      end
+    end
+  deactivate Page
+
+end
+
+== Phase: win ==
+
+[-> Page : useEffect: phase===win
+activate Page
+  Page -> Logic : calcScore(wrongCount, letterCount)
+  activate Logic
+  return max(10, letters*100 - wrong*15)
+
+  Page -> API : submitScore({ grandkid_id, 'hangman', score })
+  activate API
+  return 200 OK
+deactivate Page
+
+note over Page : WinBadge: "You got it!" / score shown
+
+User -> Page : click "Play Again"
+activate Page
+  Page -> API : getRandomWord(sameDifficulty)
+  activate API
+  return new word
+
+  Page -> Page : reset guessed / setPhase('play')
+  activate Page
+  deactivate Page
+deactivate Page
+
+== Phase: lose ==
+
+[-> Page : useEffect: phase===lose
+activate Page
+deactivate Page
+
+note over Page : WinBadge: "Oh no!" / word revealed / no score submitted
+
+deactivate User
+
+@enduml

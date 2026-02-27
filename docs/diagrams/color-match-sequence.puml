@@ -1,0 +1,148 @@
+@startuml color-match-sequence
+title Color Match (Picture Matcher) — Sequence Diagram
+
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 8
+skinparam sequence {
+  ParticipantBackgroundColor #FDF4FF
+  ParticipantBorderColor #9333EA
+  LifeLineBorderColor #D8B4FE
+  ActorBackgroundColor #FAF5FF
+  ActorBorderColor #7E22CE
+}
+
+actor User
+participant "PictureMatcherPage" as Page
+participant "Deck Builder" as Deck
+participant "api.ts" as API
+participant "sounds.ts" as Audio
+
+activate User
+
+== Mount: pre-load images ==
+
+activate Page
+  Page -> API : getPuzzleImages()
+  activate API
+  return image list
+
+  Page -> API : getPuzzleImage(id) × 12 [Promise.all]
+  activate API
+  return base64 data URIs
+
+  Page -> Page : setImageCache(uris)
+  activate Page
+  deactivate Page
+deactivate Page
+
+== Phase: select ==
+
+User -> Page : click difficulty chip
+activate Page
+  Page -> Deck : buildDeck(imageCache, config.pairs)
+  activate Deck
+  note right of Deck
+    Image pairs + emoji fallbacks
+    Fisher-Yates shuffle × 2×pairs
+  end note
+  return CardData[]
+
+  Page -> Page : setCards / reset flipped / matched / moves / locked / setPhase('play')
+  activate Page
+  deactivate Page
+deactivate Page
+
+== Phase: play ==
+
+loop card flipping
+
+  User -> Page : click card A
+  activate Page
+    Page -> Page : validate: not locked, not matched, not flipped
+    activate Page
+    deactivate Page
+
+    Page -> Audio : playFlip()
+    activate Audio
+    return
+
+    Page -> Page : setFlipped([A])
+    activate Page
+    deactivate Page
+  deactivate Page
+
+  User -> Page : click card B
+  activate Page
+    Page -> Page : validate: not locked, not matched, not flipped
+    activate Page
+    deactivate Page
+
+    Page -> Audio : playFlip()
+    activate Audio
+    return
+
+    Page -> Page : setFlipped([A, B]) / setMoves(m+1)
+    activate Page
+    deactivate Page
+
+    alt cards[A].matchKey === cards[B].matchKey
+      Page -> Audio : playMatch()
+      activate Audio
+      return
+
+      Page -> Page : setMatched(add matchKey) / setFlipped([])
+      activate Page
+      deactivate Page
+
+      alt all pairs matched
+        Page -> Audio : playWin()
+        activate Audio
+        return
+
+        Page -> Page : setPhase('done') / setShowWinBadge(true)
+        activate Page
+        deactivate Page
+      end
+
+    else mismatch
+      Page -> Audio : playMismatch()
+      activate Audio
+      return
+
+      Page -> Page : setLocked(true)
+      activate Page
+      deactivate Page
+
+      note over Page : 800ms — both cards remain visible
+
+      Page -> Page : setFlipped([]) / setLocked(false)
+      activate Page
+      deactivate Page
+    end
+  deactivate Page
+
+end
+
+== Phase: done ==
+
+activate Page
+  Page -> API : submitScore({ grandkid_id, 'color-match',\n  max(0, 100−(moves−pairs)×5) })
+  activate API
+  return 200 OK
+deactivate Page
+
+User -> Page : click "Play Again"
+activate Page
+  Page -> Deck : buildDeck(imageCache, config.pairs)
+  activate Deck
+  return new CardData[]
+
+  Page -> Page : reset state / setPhase('play')
+  activate Page
+  deactivate Page
+deactivate Page
+
+deactivate User
+
+@enduml

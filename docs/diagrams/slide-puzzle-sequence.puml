@@ -1,0 +1,179 @@
+@startuml slide-puzzle-sequence
+title Slide Puzzle - Sequence Diagram
+
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 8
+skinparam sequence {
+  ParticipantBackgroundColor #F0FDF4
+  ParticipantBorderColor #16A34A
+  LifeLineBorderColor #86EFAC
+  ActorBackgroundColor #ECFDF5
+  ActorBorderColor #059669
+}
+
+actor User
+participant "SlidePuzzlePage" as Page
+participant "puzzleLogic.ts" as Logic
+participant "api.ts" as API
+participant "sounds.ts" as Audio
+
+activate User
+
+== Mount: pre-load images ==
+
+[-> Page : useEffect: mount
+activate Page
+  Page -> API : getPuzzleImages()
+  activate API
+  return PuzzleImage[] list
+
+  Page -> Page : setImages(list) / setSelectedImageId(random)
+  activate Page
+  deactivate Page
+deactivate Page
+
+== Phase: select ==
+
+User -> Page : choose image + difficulty, click "Start"
+activate Page
+  Page -> API : getPuzzleImage(selectedImageId)
+  activate API
+  return base64 data URI
+
+  Page -> Logic : generateBoard(gridSize)
+  activate Logic
+  note right of Logic
+    Fisher-Yates shuffle
+    Check solvability
+    Re-shuffle if solved
+  end note
+  return shuffled number[]
+
+  Page -> Page : setImageDataUri / setBoard / setMoves(0) / setPhase('play')
+  activate Page
+  deactivate Page
+deactivate Page
+
+== Phase: play - Manual ==
+
+loop each tile click
+
+  User -> Page : click tile at index i
+  activate Page
+    Page -> Logic : canMove(board, gridSize, i)
+    activate Logic
+    return true (adjacent to empty)
+
+    Page -> Logic : moveTile(board, gridSize, i)
+    activate Logic
+    return newBoard (tile swapped with empty)
+
+    Page -> Audio : playSlide()
+    activate Audio
+    return
+
+    Page -> Page : setBoard(newBoard) / setMoves(m+1)
+    activate Page
+    deactivate Page
+
+    Page -> Logic : isSolved(newBoard)
+    activate Logic
+
+    alt solved
+      return true
+      Page -> Audio : playWin()
+      activate Audio
+      return
+
+      Page -> Page : setPhase('win')
+      activate Page
+      deactivate Page
+    else not solved
+      return false
+    end
+  deactivate Page
+
+end
+
+== Phase: play - Auto-Solve (5x5 max) ==
+
+User -> Page : click "Solve"
+activate Page
+  Page -> Logic : solvePuzzle(board, gridSize)
+  activate Logic
+  note right of Logic
+    IDA* - Manhattan dist
+    + linear conflict heuristic
+    15M node budget
+  end note
+  return moves[] | null
+
+  alt solution found
+    Page -> Page : setSolving(true) / setAutoSolved(true)
+    activate Page
+    deactivate Page
+
+    loop each step every 250ms
+      [-> Page : timer step
+      activate Page
+        Page -> Logic : moveTile(board, gridSize, step)
+        activate Logic
+        return newBoard
+
+        Page -> Page : setBoard(newBoard)
+        activate Page
+        deactivate Page
+      deactivate Page
+    end
+
+    Page -> Audio : playWin()
+    activate Audio
+    return
+
+    Page -> Page : setPhase('win')
+    activate Page
+    deactivate Page
+
+  else unsolvable / budget exceeded
+    Page -> Page : setSolveError(true)
+    activate Page
+    deactivate Page
+  end
+deactivate Page
+
+== Phase: win ==
+
+[-> Page : useEffect: phase===win
+activate Page
+  alt NOT autoSolved
+    Page -> Logic : calcScore(moves, gridSize)
+    activate Logic
+    note right of Logic
+      par = {3:25, 4:80, 5:150, 6:250}
+      score = min(max, maxScore * par / moves)
+    end note
+    return score
+
+    Page -> API : submitScore({ grandkid_id, 'slide-puzzle', score })
+    activate API
+    return 200 OK
+  else autoSolved
+    note over Page : No score submitted
+  end
+deactivate Page
+
+User -> Page : click "Play Again"
+activate Page
+  Page -> Logic : generateBoard(gridSize)
+  activate Logic
+  return new shuffled board
+
+  Page -> Page : same image / re-scramble / setPhase('play')
+  activate Page
+  deactivate Page
+deactivate Page
+
+deactivate User
+
+@enduml

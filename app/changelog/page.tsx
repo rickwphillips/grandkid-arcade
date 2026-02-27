@@ -18,6 +18,15 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.8.4',
+    date: '2026-02-26',
+    title: 'Game Engine Documentation',
+    changes: [
+      { icon: '📐', text: 'Added PlantUML component and sequence diagrams for all 5 game engines (Connect-4, Hangman, Slide Puzzle, Color Match, Word Search)' },
+      { icon: '📖', text: 'Added per-game engine reference docs covering state machines, data structures, algorithms, and scoring rules' },
+    ],
+  },
+  {
     version: '1.8.3',
     date: '2026-02-24',
     title: 'Connect 4 Polish & UI Fixes',

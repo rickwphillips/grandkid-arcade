@@ -1,0 +1,99 @@
+@startuml color-match-components
+title Color Match (Picture Matcher) — Component Architecture
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FAFAFA
+skinparam component {
+  BackgroundColor #FDF4FF
+  BorderColor #9333EA
+  FontColor #3B0764
+}
+skinparam package {
+  BackgroundColor #FAF5FF
+  BorderColor #7E22CE
+  FontColor #4C1D95
+}
+skinparam note {
+  BackgroundColor #FFFBEB
+  BorderColor #D97706
+}
+
+package "app/games/color-match/" {
+  component "page.tsx\n**PictureMatcherPage**" as Page
+
+  package "Game State" {
+    component "phase: 'select' | 'play' | 'done'" as PhaseState
+    component "cards: CardData[]\n(shuffled deck, pairs×2)" as CardState
+    component "flipped: number[]\n(0, 1, or 2 indices)" as FlipState
+    component "matched: Set<string>\n(matchKeys of found pairs)" as MatchState
+    component "moves: number (pair attempts)\nlocked: boolean\nshowWinBadge: boolean" as UIState
+  }
+
+  package "Deck Builder" {
+    component "**buildDeck(imageDataUris, pairs)**" as Deck
+    note right of Deck
+      For each pair slot:
+        image URI → CardData (type:'image')
+        fallback → emoji CardData (type:'emoji')
+      Emojis: 🐶🐱🐸🦋🌈🍎🌻⭐🎸🚀🎨🌺
+      Fisher-Yates shuffle of 2×pairs cards
+    end note
+  }
+
+  package "Scoring" {
+    component "**calcScore(moves, pairs)**\nmax(0, 100 − (moves−pairs)×5)" as Score
+  }
+
+  component "**sounds.ts**" as Sounds
+  note right of Sounds
+    playFlip()
+    playMatch()
+    playMismatch()
+    playWin()
+  end note
+}
+
+package "Difficulty Config" {
+  component "easy:   6 pairs, 3 cols" as Easy
+  component "medium: 8 pairs, 4 cols" as Medium
+  component "hard:  12 pairs, 6 cols" as Hard
+}
+
+package "app/components/ & lib/" {
+  component "**WinBadge.tsx**" as WinBadge
+  component "**FloatingLoveMessages.tsx**" as FLM
+  component "**useGrandkid()**" as Hook
+  component "**api.ts**" as API
+  note right of API
+    getPuzzleImages() → list
+    getPuzzleImage(id) → base64
+    (parallel fetch up to 12 images)
+    submitScore() — always on win
+  end note
+}
+
+Page --> Deck : buildDeck(imageCache, pairs)
+Page --> Score : calcScore(moves, pairs)
+Page --> Sounds : plays on each flip event
+Page --> WinBadge : visible when all pairs matched
+Page --> FLM : active={phase==='play'}
+Page --> Hook : selected grandkid
+Page --> API : fetch images on mount\nsubmitScore always on win
+
+Easy --> Page
+Medium --> Page
+Hard --> Page
+
+note bottom of Page
+  **Flip logic**:
+  1st click → show card (flipped[0])
+  2nd click → show card, check match
+    match: add matchKey to matched, clear flipped
+    mismatch: lock 800ms, flip both back
+
+  **Card rendering**: 3D CSS transform
+  Front: "?" back face
+  Back: image (backgroundImage) or emoji
+end note
+
+@enduml

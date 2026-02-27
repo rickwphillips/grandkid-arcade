@@ -1,0 +1,159 @@
+@startuml word-search-sequence
+title Word Search - Sequence Diagram (medium difficulty)
+
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 8
+skinparam sequence {
+  ParticipantBackgroundColor #FFF1F2
+  ParticipantBorderColor #E11D48
+  LifeLineBorderColor #FDA4AF
+  ActorBackgroundColor #FFF5F5
+  ActorBorderColor #BE123C
+}
+
+actor User
+participant "WordSearchPage" as Page
+participant "gameLogic.ts" as Logic
+participant "api.ts" as API
+participant "sounds.ts" as Audio
+
+activate User
+
+== Mount: load themes ==
+
+[-> Page : useEffect: mount
+activate Page
+  Page -> API : getWordSearchThemes()
+  activate API
+  return WordSearchTheme[] list
+
+  Page -> Page : setThemes(list)
+  activate Page
+  deactivate Page
+deactivate Page
+
+== Phase: select ==
+
+User -> Page : click theme card
+activate Page
+  Page -> API : getWordSearchTheme(themeId)
+  activate API
+  return WordSearchThemeWithWords { words[], difficulty }
+
+  Page -> Logic : generateGrid(words, difficulty)
+  activate Logic
+  note right of Logic
+    Filter valid words (3+ chars)
+    Place in NxN, 8 directions
+    50 attempts per word
+    Fill blanks randomly
+  end note
+  return Grid { cells[][], placedWords[] }
+
+  Page -> Page : setCurrentTheme / setGrid / reset found / earned / setPhase('play')
+  activate Page
+  deactivate Page
+deactivate Page
+
+== Phase: play - Grid Selection ==
+
+loop each word hunt
+
+  User -> Page : click cell [r1, c1]
+  activate Page
+    Page -> Page : setSelStart([r1, c1])
+    activate Page
+    deactivate Page
+  deactivate Page
+
+  User -> Page : click cell [r2, c2]
+  activate Page
+    Page -> Logic : checkSelection(grid, [r1,c1], [r2,c2])
+    activate Logic
+    note right of Logic
+      Validate straight line
+      Check forward + reverse
+      Match against placedWords
+    end note
+
+    alt word found
+      return matched word string
+
+      Page -> Audio : playFound()
+      activate Audio
+      return
+
+      Page -> Page : add foundWords / foundCells / earnedPoints += 100
+      activate Page
+      deactivate Page
+
+      alt all words found
+        Page -> Audio : playWin()
+        activate Audio
+        return
+
+        Page -> Page : earnedPoints + bonus / setScore / setPhase('done')
+        activate Page
+        deactivate Page
+      end
+
+    else no match / invalid line
+      return null
+
+      Page -> Page : setErrorCells / flash red 600ms / clearErrorCells / setSelStart(null)
+      activate Page
+      deactivate Page
+    end
+  deactivate Page
+
+end
+
+== Easy Mode: word list tap ==
+
+User -> Page : click word in list
+activate Page
+  Page -> Logic : getPlacedWordCells(word)
+  activate Logic
+  return 'r,c' key array
+
+  Page -> Page : add foundWords / foundCells (earnedPoints unchanged - 0 pts)
+  activate Page
+  deactivate Page
+
+  Page -> Audio : playFound()
+  activate Audio
+  return
+deactivate Page
+
+note over Page : Completion bonus not possible if any word found via list tap
+
+== Phase: done ==
+
+[-> Page : useEffect: phase===done
+activate Page
+  Page -> API : submitScore({ grandkid_id, 'word-search', finalScore })
+  activate API
+  return 200 OK
+deactivate Page
+
+note over Page
+  Score = earnedPoints + bonus
+  8 words x grid = 800 + 500 = 1300
+  6 grid + 2 list = 600 + 0 = 600
+end note
+
+User -> Page : click "Play Again"
+activate Page
+  Page -> Logic : generateGrid(words, difficulty)
+  activate Logic
+  return new grid (same theme)
+
+  Page -> Page : reset state / setPhase('play')
+  activate Page
+  deactivate Page
+deactivate Page
+
+deactivate User
+
+@enduml
