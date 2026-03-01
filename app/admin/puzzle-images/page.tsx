@@ -17,6 +17,8 @@ import {
   Fade,
   Alert,
   CircularProgress,
+  Popper,
+  Paper,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -45,6 +47,49 @@ function PuzzleImagesAdmin() {
   // Delete confirmation
   const [deleteTarget, setDeleteTarget] = useState<PuzzleImage | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Hover preview
+  const [virtualAnchor, setVirtualAnchor] = useState<{ getBoundingClientRect: () => DOMRect } | null>(null);
+  const [popoverId, setPopoverId] = useState<number | null>(null);
+  const [previewCache, setPreviewCache] = useState<Record<number, string>>({});
+  const [loadingPreviewId, setLoadingPreviewId] = useState<number | null>(null);
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mousePositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  const handleImageMouseEnter = (e: React.MouseEvent<HTMLElement>, image: PuzzleImage) => {
+    mousePositionRef.current = { x: e.clientX, y: e.clientY };
+    hoverTimerRef.current = setTimeout(async () => {
+      const { x, y } = mousePositionRef.current;
+      setVirtualAnchor({
+        getBoundingClientRect: () => ({ top: y, left: x, bottom: y, right: x, width: 0, height: 0, x, y, toJSON: () => ({}) } as DOMRect),
+      });
+      setPopoverId(image.id);
+      if (!previewCache[image.id]) {
+        setLoadingPreviewId(image.id);
+        try {
+          const data = await api.getPuzzleImage(image.id);
+          setPreviewCache(prev => ({ ...prev, [image.id]: data.image_data }));
+        } catch {
+          // ignore preview errors
+        } finally {
+          setLoadingPreviewId(null);
+        }
+      }
+    }, 500);
+  };
+
+  const handleImageMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    mousePositionRef.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handleImageMouseLeave = () => {
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+    setVirtualAnchor(null);
+    setPopoverId(null);
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 0);
@@ -269,7 +314,11 @@ function PuzzleImagesAdmin() {
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 {images.map((image, i) => (
                   <Fade key={image.id} in timeout={600 + i * 100}>
-                    <Card>
+                    <Card
+                      onMouseEnter={(e) => handleImageMouseEnter(e, image)}
+                      onMouseMove={handleImageMouseMove}
+                      onMouseLeave={handleImageMouseLeave}
+                    >
                       <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1.5, '&:last-child': { pb: 1.5 } }}>
                         <ImageIcon color="action" />
                         <Box sx={{ flexGrow: 1 }}>
@@ -294,6 +343,30 @@ function PuzzleImagesAdmin() {
           </Box>
         </Fade>
       </Container>
+
+      {/* Hover Image Preview */}
+      <Popper
+        open={!!virtualAnchor}
+        anchorEl={virtualAnchor}
+        placement="right-start"
+        modifiers={[{ name: 'offset', options: { offset: [0, 8] } }]}
+        sx={{ zIndex: 1300 }}
+      >
+        <Paper elevation={6} sx={{ p: 1 }}>
+          {loadingPreviewId === popoverId ? (
+            <Box sx={{ width: 160, height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CircularProgress size={32} />
+            </Box>
+          ) : popoverId !== null && previewCache[popoverId] ? (
+            <Box
+              component="img"
+              src={previewCache[popoverId]}
+              alt="Preview"
+              sx={{ width: 160, height: 160, objectFit: 'cover', borderRadius: 1, display: 'block' }}
+            />
+          ) : null}
+        </Paper>
+      </Popper>
 
       {/* Delete Confirmation */}
       <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)}>
