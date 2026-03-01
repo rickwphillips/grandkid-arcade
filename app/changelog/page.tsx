@@ -18,6 +18,16 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.9.0',
+    date: '2026-03-01',
+    title: 'Admin Settings Consolidation',
+    changes: [
+      { icon: '🛠️', text: 'Merged Puzzle Images, Hangman Words, and Word Search admin into a single Admin Settings page with collapsible accordions — one section open at a time' },
+      { icon: '🖱️', text: 'Puzzle Images list now shows a hover preview — lazy-loads the image after 500ms and appears at the cursor position' },
+      { icon: '🔗', text: 'Home page admin nav simplified to a single Admin chip (admin-only)' },
+    ],
+  },
+  {
     version: '1.8.4',
     date: '2026-02-26',
     title: 'Game Engine Documentation',
