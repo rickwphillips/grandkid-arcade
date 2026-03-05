@@ -44,7 +44,7 @@ export function GameCard({ game }: GameCardProps) {
               {game.title}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Ages {game.ageRange[0]}–{game.ageRange[1]}
+              Ages {game.ageRange[0]}+
             </Typography>
           </Box>
         </Box>

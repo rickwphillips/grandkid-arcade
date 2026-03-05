@@ -18,6 +18,20 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.10.0',
+    date: '2026-03-05',
+    title: 'Jigsaw Puzzle',
+    changes: [
+      { icon: '🧩', text: 'New game: Jigsaw Puzzle — drag and drop true interlocking puzzle-shaped pieces to rebuild the picture, powered by headbreaker + Konva canvas' },
+      { icon: '🖼️', text: 'Uses the same uploaded puzzle images as Slide Puzzle; pick any image and difficulty before starting' },
+      { icon: '📐', text: 'Three difficulty levels — Easy (3×3), Medium (4×4), Hard (5×5) — auto-selected based on the grandkid\'s age' },
+      { icon: '🔒', text: 'Pieces and groups are clamped to the canvas on drop so nothing gets lost off-screen' },
+      { icon: '🏆', text: 'Win screen replaces the canvas with the completed image so you can admire the full picture' },
+      { icon: '🔀', text: 'Slide Puzzle icon updated to avoid duplicating the new puzzle piece emoji' },
+      { icon: '🎂', text: 'Age display on game cards updated to "Ages X+" rather than showing a max age of 18' },
+    ],
+  },
+  {
     version: '1.9.0',
     date: '2026-03-01',
     title: 'Admin Settings Consolidation',

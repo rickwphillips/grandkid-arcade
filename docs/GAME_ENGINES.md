@@ -13,6 +13,7 @@ Each game follows the same outer shell: grandkid selector, `phase` state machine
 | [Slide Puzzle](engines/slide-puzzle.md) | `app/games/slide-puzzle/` | Components · Sequence |
 | [Color Match](engines/color-match.md) | `app/games/color-match/` | Components · Sequence |
 | [Word Search](engines/word-search.md) | `app/games/word-search/` | Components · Sequence |
+| [Jigsaw Puzzle](engines/jigsaw-puzzle.md) | `app/games/jigsaw-puzzle/` | — |
 
 ## Shared Platform
 

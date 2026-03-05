@@ -9,6 +9,14 @@ describe('getGame', () => {
     expect(game!.title).toBe('Connect 4');
   });
 
+  it('returns correct definition for jigsaw-puzzle', () => {
+    const game = getGame('jigsaw-puzzle');
+    expect(game).toBeDefined();
+    expect(game!.slug).toBe('jigsaw-puzzle');
+    expect(game!.emoji).toBe('🧩');
+    expect(game!.ageRange[0]).toBe(3);
+  });
+
   it('returns undefined for nonexistent slug', () => {
     expect(getGame('nonexistent')).toBeUndefined();
   });
@@ -27,9 +35,9 @@ describe('getGamesForAge', () => {
     expect(slugs).not.toContain('hangman');
   });
 
-  it('returns all 5 games for age 5', () => {
+  it('returns all 6 games for age 5', () => {
     const result = getGamesForAge(5);
-    expect(result).toHaveLength(5);
+    expect(result).toHaveLength(6);
   });
 
   it('returns empty array for age 0', () => {
@@ -38,8 +46,8 @@ describe('getGamesForAge', () => {
 });
 
 describe('games registry', () => {
-  it('has exactly 5 entries', () => {
-    expect(games).toHaveLength(5);
+  it('has exactly 6 entries', () => {
+    expect(games).toHaveLength(6);
   });
 
   it('all entries have required fields', () => {

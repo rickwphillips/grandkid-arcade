@@ -23,7 +23,7 @@ export const games: GameDefinition[] = [
     slug: 'slide-puzzle',
     title: 'Slide Puzzle',
     description: 'Slide the tiles to put the picture back together! A classic brain teaser.',
-    emoji: '🧩',
+    emoji: '🔀',
     ageRange: [5, 18],
     category: 'puzzle',
   },
@@ -50,6 +50,14 @@ export const games: GameDefinition[] = [
     emoji: '🔍',
     ageRange: [5, 18],
     category: 'educational',
+  },
+  {
+    slug: 'jigsaw-puzzle',
+    title: 'Jigsaw Puzzle',
+    description: 'Drag and drop real puzzle-shaped pieces to rebuild the picture!',
+    emoji: '🧩',
+    ageRange: [3, 18],
+    category: 'puzzle',
   },
 ];
 

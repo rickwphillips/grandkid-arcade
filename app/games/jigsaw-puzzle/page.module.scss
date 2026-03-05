@@ -1,0 +1,54 @@
+/* Playful background wrapper */
+.gameArea {
+  position: relative;
+  padding: 24px 12px;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.gameArea::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 16px;
+  opacity: 0.45;
+  background:
+    radial-gradient(circle 8px, #daa520 98%, transparent 100%) 0 0 / 40px 40px,
+    radial-gradient(circle 5px, #d2691e 98%, transparent 100%) 20px 20px / 40px 40px;
+}
+
+.gameAreaDark::before {
+  opacity: 0.18;
+}
+
+.gameArea > * {
+  position: relative;
+  z-index: 1;
+}
+
+.difficultyRow {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+/* Headbreaker/Konva canvas container */
+.puzzleContainer {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}

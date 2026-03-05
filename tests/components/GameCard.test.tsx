@@ -25,7 +25,7 @@ describe('GameCard', () => {
 
   it('renders age range text', () => {
     render(<GameCard game={testGame} />);
-    expect(screen.getByText('Ages 4–18')).toBeInTheDocument();
+    expect(screen.getByText('Ages 4+')).toBeInTheDocument();
   });
 
   it('renders category chip with correct label', () => {
