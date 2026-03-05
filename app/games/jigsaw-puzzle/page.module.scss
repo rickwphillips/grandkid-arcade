@@ -1,0 +1,69 @@
+/* Playful background wrapper */
+.gameArea {
+  position: relative;
+  padding: 24px 12px;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.gameArea::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 16px;
+  opacity: 0.45;
+  background:
+    radial-gradient(circle 8px, #daa520 98%, transparent 100%) 0 0 / 40px 40px,
+    radial-gradient(circle 5px, #d2691e 98%, transparent 100%) 20px 20px / 40px 40px;
+}
+
+.gameAreaDark::before {
+  opacity: 0.18;
+}
+
+.gameArea > * {
+  position: relative;
+  z-index: 1;
+}
+
+.difficultyRow {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+/* Puzzle container — constrain width, let height be natural */
+.puzzleWrapper {
+  position: relative;
+  max-width: 520px;
+  margin: 0 auto;
+
+  /* Override library defaults for a polished look */
+  :global(.jigsaw-puzzle__piece) {
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+    transition: box-shadow 0.1s ease;
+  }
+
+  :global(.jigsaw-puzzle__piece--solved) {
+    border-color: #d2691e;
+    box-shadow: 0 0 0 2px rgba(210, 105, 30, 0.4);
+  }
+
+  :global(.jigsaw-puzzle__piece--dragging) {
+    box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.45);
+    z-index: 10;
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}

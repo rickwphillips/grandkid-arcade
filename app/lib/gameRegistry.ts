@@ -51,6 +51,14 @@ export const games: GameDefinition[] = [
     ageRange: [5, 18],
     category: 'educational',
   },
+  {
+    slug: 'jigsaw-puzzle',
+    title: 'Jigsaw Puzzle',
+    description: 'Drag and drop puzzle pieces to rebuild the picture!',
+    emoji: '🧩',
+    ageRange: [3, 18],
+    category: 'puzzle',
+  },
 ];
 
 export function getGame(slug: string): GameDefinition | undefined {

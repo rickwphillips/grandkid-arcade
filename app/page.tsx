@@ -10,10 +10,8 @@ import {
   Avatar,
 } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import SettingsIcon from '@mui/icons-material/Settings';
 import TuneIcon from '@mui/icons-material/Tune';
-import AbcIcon from '@mui/icons-material/Abc';
-import SearchIcon from '@mui/icons-material/Search';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import Link from 'next/link';
 import { DarkModeToggle } from './components/DarkModeToggle';
 import { LogoutButton } from './components/LogoutButton';
@@ -106,32 +104,14 @@ export default function HomePage() {
               sx={{ ml: 'auto' }}
             />
             {user?.role === 'admin' && (
-              <>
-                <Chip
-                  icon={<SettingsIcon />}
-                  label="Images"
-                  variant="outlined"
-                  component={Link}
-                  href="/admin/puzzle-images/"
-                  clickable
-                />
-                <Chip
-                  icon={<AbcIcon />}
-                  label="Words"
-                  variant="outlined"
-                  component={Link}
-                  href="/admin/hangman-words/"
-                  clickable
-                />
-                <Chip
-                  icon={<SearchIcon />}
-                  label="Word Search"
-                  variant="outlined"
-                  component={Link}
-                  href="/admin/word-search/"
-                  clickable
-                />
-              </>
+              <Chip
+                icon={<AdminPanelSettingsIcon />}
+                label="Admin"
+                variant="outlined"
+                component={Link}
+                href="/admin/"
+                clickable
+              />
             )}
           </Box>
         </Fade>
