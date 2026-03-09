@@ -59,6 +59,14 @@ export const games: GameDefinition[] = [
     ageRange: [3, 18],
     category: 'puzzle',
   },
+  {
+    slug: 'math-flash-cards',
+    title: 'Math Flash Cards',
+    description: 'Solve math problems as fast as you can! Three difficulty levels covering addition, subtraction, multiplication, and division.',
+    emoji: '🔢',
+    ageRange: [4, 18],
+    category: 'educational',
+  },
 ];
 
 export function getGame(slug: string): GameDefinition | undefined {

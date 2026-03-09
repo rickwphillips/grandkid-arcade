@@ -18,6 +18,17 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.11.0',
+    date: '2026-03-09',
+    title: 'Math Flash Cards',
+    changes: [
+      { icon: '🔢', text: 'New game: Math Flash Cards — solve 10 math problems per round with 4 multiple-choice answers and instant feedback' },
+      { icon: '📊', text: 'Three difficulty levels: Easy (addition up to 10), Medium (add & subtract up to 20), Hard (all four operations)' },
+      { icon: '🏆', text: 'Earn 10 points per correct answer; score saved to your profile on completion' },
+      { icon: '📈', text: 'Progress bar shows how far through the round you are; correct answer always highlighted on wrong guess' },
+    ],
+  },
+  {
     version: '1.10.0',
     date: '2026-03-05',
     title: 'Jigsaw Puzzle',
