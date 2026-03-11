@@ -20,6 +20,7 @@ export const games: GameDefinition[] = [
     title: 'Picture Matcher',
     description: 'Flip cards and find matching pairs! Match pictures and emojis at three difficulty levels.',
     emoji: '🖼️',
+    emojiSrc: `${ASSET_BASE}/icons/picture-matcher.png`,
     ageRange: [3, 18],
     category: 'puzzle',
   },
