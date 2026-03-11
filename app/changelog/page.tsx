@@ -18,6 +18,15 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.13.2',
+    date: '2026-03-11',
+    title: 'Game Card Icons',
+    changes: [
+      { icon: '🖼️', text: 'Custom icons for all 7 games — Picture Matcher, Slide Puzzle, Connect 4, Hangman, Word Search, Math Flash Cards, and Simon Says' },
+      { icon: '✂️', text: 'White backgrounds removed from icons; transparent PNGs generated from high-res originals' },
+    ],
+  },
+  {
     version: '1.13.1',
     date: '2026-03-11',
     title: 'Golden Mole & Mallet Cursor',

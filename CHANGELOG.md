@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.13.2] - 2026-03-11
+### Added
+- **Game Card Icons** — custom transparent PNG icons for all 7 games (Picture Matcher, Slide Puzzle, Connect 4, Hangman, Word Search, Math Flash Cards, Simon Says)
+  - Generated from high-res originals; white backgrounds removed via corner flood-fill
+
 ## [1.13.1] - 2026-03-11
 ### Added
 - **Whack-a-Mole: Golden Mole** — rare (~15% chance) golden mole variant worth 10× points
