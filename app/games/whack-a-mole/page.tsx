@@ -10,13 +10,16 @@ import { PageContainer } from '@/app/components/PageContainer';
 import { FloatingLoveMessages } from '@/app/components/FloatingLoveMessages';
 import { useGrandkid } from '@/app/lib/useGrandkid';
 import { api } from '@/app/lib/api';
-import { playWhack, playEnd } from './sounds';
+import { playWhack, playGoldenWhack, playEnd } from './sounds';
+import styles from './page.module.scss';
 
 type Difficulty = 'easy' | 'medium' | 'hard';
 type Phase = 'select' | 'playing' | 'done';
+type MoleType = 'normal' | 'golden';
 
 const HOLES = 9;
 const ROUND_SECONDS = 30;
+const GOLDEN_CHANCE = 0.15; // ~1-in-7 chance a spawned mole is golden
 
 const SETTINGS: Record<Difficulty, { spawnMs: number; lifeMs: number; maxMoles: number; pts: number }> = {
   easy:   { spawnMs: 1200, lifeMs: 1600, maxMoles: 1, pts: 5  },
@@ -29,7 +32,7 @@ export default function WhackAMolePage() {
 
   const [phase, setPhase] = useState<Phase>('select');
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
-  const [activeMoles, setActiveMoles] = useState<Set<number>>(new Set());
+  const [activeMoles, setActiveMoles] = useState<Map<number, MoleType>>(new Map());
   const [justHit, setJustHit] = useState<Set<number>>(new Set());
   const [score, setScore] = useState(0);
   const [hits, setHits] = useState(0);
@@ -38,6 +41,32 @@ export default function WhackAMolePage() {
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
 
   const removalTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const lastSpawnWasGolden = useRef(false);
+  const malletWrapperRef = useRef<HTMLDivElement>(null);
+  const malletImgRef = useRef<HTMLImageElement>(null);
+
+  const handleGridPointerMove = useCallback((e: React.PointerEvent) => {
+    if (malletWrapperRef.current) {
+      malletWrapperRef.current.style.left = `${e.clientX}px`;
+      malletWrapperRef.current.style.top = `${e.clientY}px`;
+    }
+  }, []);
+
+  const handleGridPointerEnter = useCallback(() => {
+    if (malletWrapperRef.current) malletWrapperRef.current.style.display = 'block';
+  }, []);
+
+  const handleGridPointerLeave = useCallback(() => {
+    if (malletWrapperRef.current) malletWrapperRef.current.style.display = 'none';
+  }, []);
+
+  const triggerMalletStrike = useCallback(() => {
+    const el = malletImgRef.current;
+    if (!el) return;
+    el.classList.remove(styles.malletCursorStriking);
+    void el.offsetWidth; // force reflow to restart animation
+    el.classList.add(styles.malletCursorStriking);
+  }, []);
 
   const clearRemovalTimers = useCallback(() => {
     removalTimers.current.forEach(clearTimeout);
@@ -46,8 +75,9 @@ export default function WhackAMolePage() {
 
   const startGame = useCallback((diff: Difficulty) => {
     clearRemovalTimers();
+    lastSpawnWasGolden.current = false;
     setDifficulty(diff);
-    setActiveMoles(new Set());
+    setActiveMoles(new Map());
     setJustHit(new Set());
     setScore(0);
     setHits(0);
@@ -87,18 +117,21 @@ export default function WhackAMolePage() {
         );
         if (available.length === 0) return prev;
         const hole = available[Math.floor(Math.random() * available.length)];
+        const type: MoleType =
+          !lastSpawnWasGolden.current && Math.random() < GOLDEN_CHANCE ? 'golden' : 'normal';
+        lastSpawnWasGolden.current = type === 'golden';
 
         // Schedule auto-removal
         const t = setTimeout(() => {
           setActiveMoles((m) => {
-            const next = new Set(m);
+            const next = new Map(m);
             next.delete(hole);
             return next;
           });
         }, lifeMs);
         removalTimers.current.push(t);
 
-        return new Set([...prev, hole]);
+        return new Map([...prev, [hole, type]]);
       });
     }, spawnMs);
 
@@ -109,7 +142,7 @@ export default function WhackAMolePage() {
   useEffect(() => {
     if (phase === 'done') {
       clearRemovalTimers();
-      setActiveMoles(new Set());
+      setActiveMoles(new Map());
     }
   }, [phase, clearRemovalTimers]);
 
@@ -117,11 +150,12 @@ export default function WhackAMolePage() {
     (hole: number) => {
       if (phase !== 'playing' || !activeMoles.has(hole)) return;
 
-      playWhack();
+      const isGolden = activeMoles.get(hole) === 'golden';
+      if (isGolden) playGoldenWhack(); else playWhack();
 
       // Remove mole immediately
       setActiveMoles((prev) => {
-        const next = new Set(prev);
+        const next = new Map(prev);
         next.delete(hole);
         return next;
       });
@@ -136,7 +170,7 @@ export default function WhackAMolePage() {
         });
       }, 300);
 
-      const pts = SETTINGS[difficulty].pts;
+      const pts = SETTINGS[difficulty].pts * (isGolden ? 10 : 1);
       setScore((s) => s + pts);
       setHits((h) => h + 1);
     },
@@ -162,7 +196,7 @@ export default function WhackAMolePage() {
   const newDifficulty = useCallback(() => {
     clearRemovalTimers();
     setPhase('select');
-    setActiveMoles(new Set());
+    setActiveMoles(new Map());
   }, [clearRemovalTimers]);
 
   // --- Select phase ---
@@ -219,15 +253,17 @@ export default function WhackAMolePage() {
   // --- Play / Done phase ---
   const progress = (timeLeft / ROUND_SECONDS) * 100;
 
-  // SVG mallet cursor — striking face at hotspot (2, 2)
-  const malletCursor =
-    `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E` +
-    `%3Crect x='1' y='1' width='18' height='11' rx='2' fill='%235D3A1A' stroke='%23C4A35A' stroke-width='1.5'/%3E` +
-    `%3Cline x1='16' y1='10' x2='30' y2='30' stroke='%23C4A35A' stroke-width='5' stroke-linecap='round'/%3E` +
-    `%3C/svg%3E") 2 2, pointer`;
-
   return (
     <PageContainer title="Whack-a-Mole" subtitle="Tap the moles before they hide!">
+      {/* Animated mallet cursor — only visible during play on pointer devices */}
+      <div
+        ref={malletWrapperRef}
+        style={{ position: 'fixed', pointerEvents: 'none', zIndex: 9999, display: 'none' }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img ref={malletImgRef} src="/cursors/mallet.png" alt="" className={styles.malletCursor} />
+      </div>
+
       <Box sx={{ position: 'relative' }}>
         {selected && <FloatingLoveMessages name={selected.name} active={phase === 'playing'} />}
 
@@ -266,46 +302,58 @@ export default function WhackAMolePage() {
               display: 'grid',
               gridTemplateColumns: 'repeat(3, 1fr)',
               gap: 2,
-              maxWidth: 340,
+              maxWidth: 400,
               mx: 'auto',
-              cursor: phase === 'playing' ? malletCursor : 'default',
+              cursor: phase === 'playing' ? 'none' : 'default',
             }}
+            onPointerMove={phase === 'playing' ? handleGridPointerMove : undefined}
+            onPointerEnter={phase === 'playing' ? handleGridPointerEnter : undefined}
+            onPointerLeave={handleGridPointerLeave}
+            onPointerDown={phase === 'playing' ? triggerMalletStrike : undefined}
           >
             {Array.from({ length: HOLES }, (_, hole) => {
               const isActive = activeMoles.has(hole);
+              const isGolden = activeMoles.get(hole) === 'golden';
               const wasHit = justHit.has(hole);
               return (
                 <Box
                   key={hole}
-                  onClick={() => handleWhack(hole)}
+                  onPointerDown={() => handleWhack(hole)}
                   sx={{
                     position: 'relative',
-                    height: 90,
+                    aspectRatio: '1',
                     borderRadius: '50%',
                     bgcolor: wasHit ? '#8B4513' : '#5D3A1A',
-                    boxShadow: 'inset 0 8px 16px rgba(0,0,0,0.5)',
+                    boxShadow: isGolden && isActive
+                      ? 'inset 0 8px 16px rgba(0,0,0,0.5), 0 0 12px 4px rgba(255,215,0,0.6)'
+                      : 'inset 0 8px 16px rgba(0,0,0,0.5)',
                     overflow: 'hidden',
-                    transition: 'background-color 0.15s',
+                    transition: 'background-color 0.15s, box-shadow 0.3s',
                     userSelect: 'none',
+                    touchAction: 'manipulation',
                   }}
                 >
                   {/* Mole pops up from the hole */}
                   <Box
+                    component="img"
+                    src={isGolden ? '/mole-golden.png' : '/mole.png'}
+                    alt={isGolden ? 'golden mole' : 'mole'}
+                    className={isGolden && isActive && !wasHit ? styles.goldenMole : undefined}
                     sx={{
                       position: 'absolute',
                       bottom: 0,
                       left: '50%',
+                      width: '90%',
+                      height: 'auto',
                       transform: isActive
                         ? 'translate(-50%, 0%)'
                         : 'translate(-50%, 110%)',
                       transition: 'transform 0.12s ease-out',
-                      fontSize: '3rem',
-                      lineHeight: 1,
-                      filter: wasHit ? 'brightness(2)' : 'none',
+                      filter: wasHit ? 'brightness(1.8)' : undefined,
+                      userSelect: 'none',
+                      pointerEvents: 'none',
                     }}
-                  >
-                    🐹
-                  </Box>
+                  />
                 </Box>
               );
             })}
@@ -325,7 +373,13 @@ export default function WhackAMolePage() {
             visible={phase === 'done' && showWinBadge}
             onClose={() => setShowWinBadge(false)}
             title="Time's up!"
-            celebration="🐹🔨🐹"
+            celebration={
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                <Box component="img" src="/mole.png" alt="mole" sx={{ width: 48, height: 'auto' }} />
+                <Box component="img" src="/cursors/mallet.png" alt="mallet" sx={{ width: 120, height: 'auto' }} />
+                <Box component="img" src="/mole.png" alt="mole" sx={{ width: 48, height: 'auto' }} />
+              </Box>
+            }
             score={score}
             message={
               selected && scoreSubmitted

@@ -1,6 +1,7 @@
 'use client';
 
 import { Box, Typography, IconButton } from '@mui/material';
+import type { ReactNode } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import styles from './WinBadge.module.scss';
@@ -12,8 +13,8 @@ interface WinBadgeProps {
   onClose: () => void;
   /** Heading text, e.g. "Puzzle Complete!" */
   title: string;
-  /** Emoji celebration line */
-  celebration?: string;
+  /** Celebration content (emoji string or JSX) */
+  celebration?: ReactNode;
   /** Number of moves (omit to hide) */
   moves?: number;
   /** Score value (omit to hide) */

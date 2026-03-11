@@ -1,0 +1,31 @@
+.goldenMole {
+  animation: goldenPulse 0.9s ease-in-out infinite;
+}
+
+@keyframes goldenPulse {
+  0%, 100% { filter: drop-shadow(0 0 4px #FFD700) drop-shadow(0 0 10px #FFD700); }
+  50%       { filter: drop-shadow(0 0 10px #FFC107) drop-shadow(0 0 22px #FF8C00); }
+}
+
+.malletCursor {
+  width: 96px;
+  display: block;
+  /* Offset so hotspot (80px from left, 26px from top) is at the pointer position */
+  translate: -80px -26px;
+  rotate: 0deg;
+  transform-origin: 20% 50%; /* pivot near the handle end */
+  user-select: none;
+  will-change: rotate;
+}
+
+.malletCursorStriking {
+  animation: malletStrike 0.24s ease-out forwards;
+}
+
+@keyframes malletStrike {
+  0%   { rotate: 0deg;   } /* resting */
+  20%  { rotate: -14deg; } /* brief windup */
+  55%  { rotate: 28deg;  } /* impact */
+  78%  { rotate: 12deg;  } /* rebound */
+  100% { rotate: 0deg;   } /* return */
+}

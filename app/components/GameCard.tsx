@@ -33,12 +33,22 @@ export function GameCard({ game }: GameCardProps) {
     >
       <CardContent sx={{ flexGrow: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
-          <Typography
-            className="game-emoji"
-            sx={{ fontSize: 36, transition: 'transform 0.2s', lineHeight: 1 }}
-          >
-            {game.emoji}
-          </Typography>
+          {game.emojiSrc ? (
+            <Box
+              component="img"
+              src={game.emojiSrc}
+              alt={game.title}
+              className="game-emoji"
+              sx={{ width: 40, height: 40, objectFit: 'contain', transition: 'transform 0.2s', flexShrink: 0 }}
+            />
+          ) : (
+            <Typography
+              className="game-emoji"
+              sx={{ fontSize: 36, transition: 'transform 0.2s', lineHeight: 1 }}
+            >
+              {game.emoji}
+            </Typography>
+          )}
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
               {game.title}

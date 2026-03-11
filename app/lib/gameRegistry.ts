@@ -5,6 +5,8 @@ export interface GameDefinition {
   emoji: string;
   ageRange: [number, number]; // [min, max]
   category: 'puzzle' | 'action' | 'creative' | 'educational';
+  /** Optional image src to use instead of emoji on the game card */
+  emojiSrc?: string;
 }
 
 // Central registry of available games.
@@ -80,6 +82,7 @@ export const games: GameDefinition[] = [
     title: 'Whack-a-Mole',
     description: 'Tap the moles before they hide! How many can you whack in 30 seconds?',
     emoji: '🐹',
+    emojiSrc: '/mole.png',
     ageRange: [3, 18],
     category: 'action',
   },
