@@ -18,6 +18,17 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.13.0',
+    date: '2026-03-11',
+    title: 'Whack-a-Mole',
+    changes: [
+      { icon: '🐹', text: 'New game: Whack-a-Mole — tap moles before they duck back into their holes, 30 second rounds' },
+      { icon: '⚡', text: 'Three difficulty levels: Easy (1 mole), Medium (2 moles), Hard (3 moles at once, faster spawns)' },
+      { icon: '🔨', text: 'Satisfying whack sound and flash on each hit; fanfare on round end' },
+      { icon: '🏆', text: 'Points scale with difficulty — 5/10/15 pts per mole; score saved on completion' },
+    ],
+  },
+  {
     version: '1.12.0',
     date: '2026-03-11',
     title: 'Simon Says',

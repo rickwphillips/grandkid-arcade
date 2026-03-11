@@ -75,6 +75,14 @@ export const games: GameDefinition[] = [
     ageRange: [3, 18],
     category: 'action',
   },
+  {
+    slug: 'whack-a-mole',
+    title: 'Whack-a-Mole',
+    description: 'Tap the moles before they hide! How many can you whack in 30 seconds?',
+    emoji: '🐹',
+    ageRange: [3, 18],
+    category: 'action',
+  },
 ];
 
 export function getGame(slug: string): GameDefinition | undefined {
