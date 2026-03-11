@@ -18,6 +18,19 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.14.0',
+    date: '2026-03-11',
+    title: 'Golden Mole & Mallet Cursor',
+    changes: [
+      { icon: '✨', text: 'Golden mole variant appears rarely (~15% chance) and is worth 10× points — never spawns two in a row' },
+      { icon: '🔔', text: 'Distinct bell-chime victory sound when a golden mole is whacked' },
+      { icon: '🔨', text: 'Animated mallet cursor replaces the static CSS cursor — swings through on every hit with a 4-frame windup/impact/rebound animation' },
+      { icon: '👆', text: 'Hit detection switched to onPointerDown with touchAction:manipulation — fixes missed taps on edge holes' },
+      { icon: '⭕', text: 'Holes are now true circles using aspectRatio:1' },
+      { icon: '🐹', text: 'Larger mole sprite (200×219) regenerated from original high-resolution source' },
+    ],
+  },
+  {
     version: '1.13.0',
     date: '2026-03-11',
     title: 'Whack-a-Mole',
