@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.14.0] - 2026-03-11
+## [1.13.1] - 2026-03-11
 ### Added
 - **Whack-a-Mole: Golden Mole** — rare (~15% chance) golden mole variant worth 10× points
   - `mole-golden.png` sprite generated from original source, horizontally mirrored

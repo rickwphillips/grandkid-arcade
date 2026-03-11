@@ -18,7 +18,7 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
-    version: '1.14.0',
+    version: '1.13.1',
     date: '2026-03-11',
     title: 'Golden Mole & Mallet Cursor',
     changes: [
