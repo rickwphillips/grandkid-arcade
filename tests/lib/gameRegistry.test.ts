@@ -35,9 +35,9 @@ describe('getGamesForAge', () => {
     expect(slugs).not.toContain('hangman');
   });
 
-  it('returns all 7 games for age 5', () => {
+  it('returns all 8 games for age 5', () => {
     const result = getGamesForAge(5);
-    expect(result).toHaveLength(7);
+    expect(result).toHaveLength(8);
   });
 
   it('returns empty array for age 0', () => {
@@ -46,8 +46,8 @@ describe('getGamesForAge', () => {
 });
 
 describe('games registry', () => {
-  it('has exactly 7 entries', () => {
-    expect(games).toHaveLength(7);
+  it('has exactly 8 entries', () => {
+    expect(games).toHaveLength(8);
   });
 
   it('all entries have required fields', () => {

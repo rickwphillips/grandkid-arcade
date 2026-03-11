@@ -67,6 +67,14 @@ export const games: GameDefinition[] = [
     ageRange: [4, 18],
     category: 'educational',
   },
+  {
+    slug: 'simon-says',
+    title: 'Simon Says',
+    description: 'Watch the color pattern and repeat it back! Each round adds one more color — how long can you go?',
+    emoji: '🟢',
+    ageRange: [3, 18],
+    category: 'action',
+  },
 ];
 
 export function getGame(slug: string): GameDefinition | undefined {

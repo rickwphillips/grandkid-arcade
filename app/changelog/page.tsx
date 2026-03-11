@@ -18,6 +18,16 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.12.0',
+    date: '2026-03-11',
+    title: 'Simon Says',
+    changes: [
+      { icon: '🟢', text: 'New game: Simon Says — watch the color sequence and repeat it back; each round adds one more color' },
+      { icon: '⚡', text: 'Three difficulty levels with increasing flash speeds: Easy (800ms), Medium (500ms), Hard (300ms)' },
+      { icon: '🏆', text: 'Points scale with difficulty — 5/10/15 pts per completed round; score saved on game over' },
+    ],
+  },
+  {
     version: '1.11.0',
     date: '2026-03-09',
     title: 'Math Flash Cards',
