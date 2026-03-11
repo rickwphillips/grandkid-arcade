@@ -21,6 +21,10 @@ import type {
 const isDev = process.env.NODE_ENV === 'development';
 export const API_BASE = isDev ? '/php-api/' : '/grandkid-api/';
 
+// Asset base path — Next.js basePath is NOT auto-prepended to src="" attributes
+// Must be prepended manually for any public/ assets referenced in code
+export const ASSET_BASE = isDev ? '' : '/app/projects/grandkid-games';
+
 // Auth token key (shared with portfolio login page)
 const AUTH_TOKEN_KEY = 'auth_token';
 

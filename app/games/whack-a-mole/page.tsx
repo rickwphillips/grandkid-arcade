@@ -11,6 +11,7 @@ import { FloatingLoveMessages } from '@/app/components/FloatingLoveMessages';
 import { useGrandkid } from '@/app/lib/useGrandkid';
 import { api } from '@/app/lib/api';
 import { playWhack, playGoldenWhack, playEnd } from './sounds';
+import { ASSET_BASE } from '@/app/lib/api';
 import styles from './page.module.scss';
 
 type Difficulty = 'easy' | 'medium' | 'hard';
@@ -261,7 +262,7 @@ export default function WhackAMolePage() {
         style={{ position: 'fixed', pointerEvents: 'none', zIndex: 9999, display: 'none' }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img ref={malletImgRef} src="/cursors/mallet.png" alt="" className={styles.malletCursor} />
+        <img ref={malletImgRef} src={`${ASSET_BASE}/cursors/mallet.png`} alt="" className={styles.malletCursor} />
       </div>
 
       <Box sx={{ position: 'relative' }}>
@@ -336,7 +337,7 @@ export default function WhackAMolePage() {
                   {/* Mole pops up from the hole */}
                   <Box
                     component="img"
-                    src={isGolden ? '/mole-golden.png' : '/mole.png'}
+                    src={isGolden ? `${ASSET_BASE}/mole-golden.png` : `${ASSET_BASE}/mole.png`}
                     alt={isGolden ? 'golden mole' : 'mole'}
                     className={isGolden && isActive && !wasHit ? styles.goldenMole : undefined}
                     sx={{
@@ -375,9 +376,9 @@ export default function WhackAMolePage() {
             title="Time's up!"
             celebration={
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                <Box component="img" src="/mole.png" alt="mole" sx={{ width: 48, height: 'auto' }} />
-                <Box component="img" src="/cursors/mallet.png" alt="mallet" sx={{ width: 120, height: 'auto' }} />
-                <Box component="img" src="/mole.png" alt="mole" sx={{ width: 48, height: 'auto' }} />
+                <Box component="img" src={`${ASSET_BASE}/mole.png`} alt="mole" sx={{ width: 48, height: 'auto' }} />
+                <Box component="img" src={`${ASSET_BASE}/cursors/mallet.png`} alt="mallet" sx={{ width: 120, height: 'auto' }} />
+                <Box component="img" src={`${ASSET_BASE}/mole.png`} alt="mole" sx={{ width: 48, height: 'auto' }} />
               </Box>
             }
             score={score}

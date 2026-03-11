@@ -1,3 +1,5 @@
+import { ASSET_BASE } from './api';
+
 export interface GameDefinition {
   slug: string;
   title: string;
@@ -82,7 +84,7 @@ export const games: GameDefinition[] = [
     title: 'Whack-a-Mole',
     description: 'Tap the moles before they hide! How many can you whack in 30 seconds?',
     emoji: '🐹',
-    emojiSrc: '/mole.png',
+    emojiSrc: `${ASSET_BASE}/mole.png`,
     ageRange: [3, 18],
     category: 'action',
   },
