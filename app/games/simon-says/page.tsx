@@ -252,7 +252,16 @@ export default function SimonSaysPage() {
               return (
                 <Box
                   key={color.label}
+                  role="button"
+                  aria-label={color.label}
+                  tabIndex={phase === 'input' ? 0 : -1}
                   onClick={() => handleButtonPress(idx)}
+                  onKeyDown={(e) => {
+                    if (phase === 'input' && (e.key === 'Enter' || e.key === ' ')) {
+                      e.preventDefault();
+                      handleButtonPress(idx);
+                    }
+                  }}
                   sx={{
                     height: 130,
                     borderRadius: 3,
