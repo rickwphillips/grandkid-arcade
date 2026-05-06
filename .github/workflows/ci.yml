@@ -10,6 +10,11 @@ on:
 permissions:
   contents: read
 
+env:
+  # Opt into Node 24 for bundled JavaScript actions ahead of the
+  # June 2 2026 Node 20 deprecation on GitHub-hosted runners.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
