@@ -38,7 +38,7 @@ function generateCard(difficulty: Difficulty): Card {
     if (useSubtraction) {
       a = Math.floor(Math.random() * 21);
       b = Math.floor(Math.random() * (a + 1));
-      question = `${a} \u2212 ${b}`;
+      question = `${a} − ${b}`;
       answer = a - b;
     } else {
       a = Math.floor(Math.random() * 21);
@@ -56,18 +56,18 @@ function generateCard(difficulty: Difficulty): Card {
     } else if (opIndex === 1) {
       a = Math.floor(Math.random() * 21);
       b = Math.floor(Math.random() * (a + 1));
-      question = `${a} \u2212 ${b}`;
+      question = `${a} − ${b}`;
       answer = a - b;
     } else if (opIndex === 2) {
       a = Math.floor(Math.random() * 12) + 1;
       b = Math.floor(Math.random() * 12) + 1;
-      question = `${a} \u00d7 ${b}`;
+      question = `${a} × ${b}`;
       answer = a * b;
     } else {
       b = Math.floor(Math.random() * 11) + 2;
       const quotient = Math.floor(Math.random() * 12) + 1;
       a = b * quotient;
-      question = `${a} \u00f7 ${b}`;
+      question = `${a} ÷ ${b}`;
       answer = quotient;
     }
   }
@@ -298,7 +298,16 @@ export default function MathFlashCardsPage() {
                 return (
                   <Box
                     key={choice}
+                    role="button"
+                    aria-label={`Answer ${choice}`}
+                    tabIndex={answerState === 'idle' ? 0 : -1}
                     onClick={() => handleChoice(choice)}
+                    onKeyDown={(e) => {
+                      if (answerState === 'idle' && (e.key === 'Enter' || e.key === ' ')) {
+                        e.preventDefault();
+                        handleChoice(choice);
+                      }
+                    }}
                     sx={(theme) => ({
                       p: 2.5,
                       borderRadius: 2,
@@ -347,7 +356,7 @@ export default function MathFlashCardsPage() {
             visible={phase === 'done' && showWinBadge}
             onClose={() => setShowWinBadge(false)}
             title="Nice work!"
-            celebration="🎉🧮🎉"
+            celebration="🎉🧭🎉"
             score={score}
             message={
               selected && scoreSubmitted
