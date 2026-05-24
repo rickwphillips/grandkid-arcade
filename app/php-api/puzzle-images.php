@@ -10,7 +10,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (isset($_GET['id'])) {
             // Get single image with full data
             $stmt = $db->prepare('SELECT id, title, image_data, created_at FROM puzzle_images WHERE id = ?');
-            $stmt->execute([$_GET['id']]);
+            $stmt->execute([(int) $_GET['id']]);
             $image = $stmt->fetch();
             if (!$image) sendError('Image not found', 404);
             sendJSON($image);
@@ -28,7 +28,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (empty($input['title'])) sendError('Title is required');
         if (strlen($input['title']) > 255) sendError('Title must be 255 characters or less');
         if (empty($input['image_data'])) sendError('Image data is required');
-        if (strpos($input['image_data'], 'data:image/') !== 0) sendError('Invalid image data format');
+        if (!preg_match('/^data:image\/(jpeg|png|gif|webp);base64,/', $input['image_data'])) {
+            sendError('Invalid image format: only JPEG, PNG, GIF, and WebP are allowed');
+        }
         if (strlen($input['image_data']) > 5 * 1024 * 1024) sendError('Image data exceeds 5MB limit');
 
         $stmt = $db->prepare('INSERT INTO puzzle_images (title, image_data) VALUES (?, ?)');
@@ -45,11 +47,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (!isset($_GET['id'])) sendError('ID is required');
 
         $stmt = $db->prepare('SELECT id FROM puzzle_images WHERE id = ?');
-        $stmt->execute([$_GET['id']]);
+        $stmt->execute([(int) $_GET['id']]);
         if (!$stmt->fetch()) sendError('Image not found', 404);
 
         $stmt = $db->prepare('DELETE FROM puzzle_images WHERE id = ?');
-        $stmt->execute([$_GET['id']]);
+        $stmt->execute([(int) $_GET['id']]);
         sendJSON(['success' => true]);
         break;
 

@@ -13,6 +13,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
             $params = [];
 
             if (isset($_GET['difficulty'])) {
+                if (!in_array($_GET['difficulty'], ['easy', 'medium', 'hard'], true)) {
+                    sendError('difficulty must be easy, medium, or hard');
+                }
                 $where[] = 'difficulty = ?';
                 $params[] = $_GET['difficulty'];
             }
