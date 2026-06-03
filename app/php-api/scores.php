@@ -39,6 +39,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (empty($input['game_slug'])) sendError('game_slug is required');
         if (!isset($input['score'])) sendError('score is required');
 
+        $knownSlugs = ['color-match', 'slide-puzzle', 'connect-4', 'hangman', 'word-search', 'jigsaw-puzzle', 'math-flash-cards', 'simon-says', 'whack-a-mole'];
+        if (!in_array($input['game_slug'], $knownSlugs, true)) {
+            sendError('Invalid game_slug', 400);
+        }
+
         $stmt = $db->prepare(
             'INSERT INTO game_plays (grandkid_id, game_slug, score, completed) VALUES (?, ?, ?, ?)'
         );

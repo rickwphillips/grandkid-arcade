@@ -23,6 +23,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $grandkidId = (int) $input['grandkid_id'];
         $gameSlug = $input['game_slug'];
 
+        $validSlugs = ['color-match', 'slide-puzzle', 'connect-4', 'hangman', 'word-search', 'jigsaw-puzzle', 'math-flash-cards', 'simon-says', 'whack-a-mole'];
+        if (!in_array($gameSlug, $validSlugs, true)) {
+            sendError('Invalid game_slug');
+        }
+
         // Check if already favorited
         $stmt = $db->prepare('SELECT id FROM favorites WHERE grandkid_id = ? AND game_slug = ?');
         $stmt->execute([$grandkidId, $gameSlug]);

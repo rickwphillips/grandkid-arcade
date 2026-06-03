@@ -8,7 +8,6 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { WinBadge } from '@/app/components/WinBadge';
 import { PageContainer } from '@/app/components/PageContainer';
 import { FloatingLoveMessages } from '@/app/components/FloatingLoveMessages';
-import { useThemeMode } from '@/app/components/ThemeProvider';
 import { useGrandkid } from '@/app/lib/useGrandkid';
 import { api } from '@/app/lib/api';
 
@@ -93,7 +92,6 @@ function generateCard(difficulty: Difficulty): Card {
 }
 
 export default function MathFlashCardsPage() {
-  const { mode: themeMode } = useThemeMode();
   const { selected } = useGrandkid();
 
   const [phase, setPhase] = useState<Phase>('select');

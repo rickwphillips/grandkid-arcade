@@ -10,7 +10,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (isset($_GET['id'])) {
             // Get single grandkid
             $stmt = $db->prepare('SELECT * FROM grandkids WHERE id = ?');
-            $stmt->execute([$_GET['id']]);
+            $stmt->execute([(int) $_GET['id']]);
             $grandkid = $stmt->fetch();
             if (!$grandkid) sendError('Grandkid not found', 404);
             $grandkid['interests'] = json_decode($grandkid['interests'] ?? '[]', true);
@@ -30,6 +30,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $input = getJSONInput();
         if (empty($input['name'])) sendError('Name is required');
         if (!isset($input['age']) || $input['age'] < 1) sendError('Valid age is required');
+        if (!empty($input['avatar_color']) && !preg_match('/^#[0-9a-fA-F]{6}$/', $input['avatar_color'])) {
+            sendError('Invalid avatar_color: must be a 6-digit hex color (e.g. #D2691E)');
+        }
 
         $stmt = $db->prepare(
             'INSERT INTO grandkids (name, age, interests, avatar_color) VALUES (?, ?, ?, ?)'
@@ -58,11 +61,17 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (isset($input['name'])) { $fields[] = 'name = ?'; $values[] = $input['name']; }
         if (isset($input['age'])) { $fields[] = 'age = ?'; $values[] = (int) $input['age']; }
         if (isset($input['interests'])) { $fields[] = 'interests = ?'; $values[] = json_encode($input['interests']); }
-        if (isset($input['avatar_color'])) { $fields[] = 'avatar_color = ?'; $values[] = $input['avatar_color']; }
+        if (isset($input['avatar_color'])) {
+            if (!preg_match('/^#[0-9a-fA-F]{6}$/', $input['avatar_color'])) {
+                sendError('Invalid avatar_color: must be a 6-digit hex color (e.g. #D2691E)');
+            }
+            $fields[] = 'avatar_color = ?';
+            $values[] = $input['avatar_color'];
+        }
 
         if (empty($fields)) sendError('No fields to update');
 
-        $values[] = $_GET['id'];
+        $values[] = (int) $_GET['id'];
         $stmt = $db->prepare('UPDATE grandkids SET ' . implode(', ', $fields) . ' WHERE id = ?');
         $stmt->execute($values);
 
@@ -72,7 +81,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
     case 'DELETE':
         if (!isset($_GET['id'])) sendError('ID is required');
         $stmt = $db->prepare('DELETE FROM grandkids WHERE id = ?');
-        $stmt->execute([$_GET['id']]);
+        $stmt->execute([(int) $_GET['id']]);
         sendJSON(['success' => true]);
         break;
 
