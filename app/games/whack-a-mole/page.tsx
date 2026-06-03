@@ -9,9 +9,8 @@ import { WinBadge } from '@/app/components/WinBadge';
 import { PageContainer } from '@/app/components/PageContainer';
 import { FloatingLoveMessages } from '@/app/components/FloatingLoveMessages';
 import { useGrandkid } from '@/app/lib/useGrandkid';
-import { api } from '@/app/lib/api';
+import { api, ASSET_BASE } from '@/app/lib/api';
 import { playWhack, playGoldenWhack, playEnd } from './sounds';
-import { ASSET_BASE } from '@/app/lib/api';
 import styles from './page.module.scss';
 
 type Difficulty = 'easy' | 'medium' | 'hard';
@@ -319,7 +318,16 @@ export default function WhackAMolePage() {
               return (
                 <Box
                   key={hole}
+                  role="button"
+                  tabIndex={phase === 'playing' ? 0 : -1}
+                  aria-label={isActive ? (isGolden ? 'Golden mole, whack it!' : 'Mole, whack it!') : 'Empty mole hole'}
                   onPointerDown={() => handleWhack(hole)}
+                  onKeyDown={(e) => {
+                    if (phase === 'playing' && (e.key === 'Enter' || e.key === ' ')) {
+                      e.preventDefault();
+                      handleWhack(hole);
+                    }
+                  }}
                   sx={{
                     position: 'relative',
                     aspectRatio: '1',
