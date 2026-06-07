@@ -303,8 +303,17 @@ export default function Connect4Page() {
               {Array.from({ length: COLS }, (_, col) => (
                 <Box
                   key={col}
+                  role="button"
+                  tabIndex={phase !== 'play' || aiThinking ? -1 : 0}
+                  aria-label={`Drop piece in column ${col + 1}`}
                   className={`${styles.column} ${phase !== 'play' || aiThinking ? styles.columnDisabled : ''}`}
                   onClick={() => handleColumnClick(col)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleColumnClick(col);
+                    }
+                  }}
                 >
                   {Array.from({ length: ROWS }, (_, row) => {
                     const cell = board[row][col];

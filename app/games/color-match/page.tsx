@@ -266,8 +266,17 @@ export default function PictureMatcherPage() {
                 return (
                   <Box
                     key={card.id}
+                    role="button"
+                    tabIndex={isFlipped ? -1 : 0}
+                    aria-label={isMatched ? `Card ${index + 1}, matched` : isFlipped ? `Card ${index + 1}, flipped` : `Card ${index + 1}, face down`}
                     className={`${styles.card} ${isFlipped ? styles.flipped : ''} ${isMatched ? styles.matched : ''}`}
                     onClick={() => handleFlip(index)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleFlip(index);
+                      }
+                    }}
                   >
                     <Box className={styles.cardInner}>
                       <Box className={styles.cardFront}>?</Box>

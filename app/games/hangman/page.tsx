@@ -18,7 +18,6 @@ import {
   getWrongCount,
   isWon,
   isLost,
-  getMaskedWord,
   calcScore,
 } from './gameLogic';
 import { playCorrect, playWrong, playWin, playLose } from './sounds';
@@ -31,9 +30,6 @@ const KEYBOARD_ROWS = [
   'ASDFGHJKL'.split(''),
   'ZXCVBNM'.split(''),
 ];
-
-const BALLOON_COLORS = ['🎈', '🟡', '🔵', '🟢', '🟣', '🟠'];
-const BALLOON_EMOJIS = ['🎈', '🎈', '🎈', '🎈', '🎈', '🎈'];
 
 // Rocket parts: [emoji, top, left] positioned to form a rocket shape
 const ROCKET_PARTS: { label: string; emoji: string; top: number; left: number; flip?: 'x' | 'y' }[] = [
@@ -216,7 +212,6 @@ export default function HangmanPage() {
   }
 
   // --- Gameplay + Win/Lose ---
-  const masked = currentWord ? getMaskedWord(currentWord.word, guessed) : '';
   const wordLetterCount = currentWord ? currentWord.word.replace(/[^A-Z]/gi, '').length : 0;
   const score = calcScore(wrongCount, wordLetterCount);
   const wordLetters = currentWord
@@ -299,8 +294,18 @@ export default function HangmanPage() {
                     return (
                       <Box
                         key={letter}
+                        role="button"
+                        tabIndex={isGuessed ? -1 : 0}
+                        aria-label={`Guess letter ${letter}`}
+                        aria-disabled={isGuessed}
                         className={`${styles.key} ${isCorrect ? styles.keyCorrect : ''} ${isWrongGuess ? styles.keyWrong : ''}`}
                         onClick={() => handleGuess(letter)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleGuess(letter);
+                          }
+                        }}
                         sx={{
                           bgcolor: isCorrect
                             ? 'success.main'
