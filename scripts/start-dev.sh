@@ -12,7 +12,9 @@ sleep 2
 
 echo "Starting PHP server on port 8082..."
 cd "$PROJECT_DIR/app"
-php -S localhost:8082 > /tmp/grandkid-php-server.log 2>&1 &
+# 0.0.0.0 binds both IPv4 and IPv6 so the Next.js proxy reaches PHP regardless
+# of how the OS resolves "localhost" (macOS prefers ::1, Linux prefers 127.0.0.1).
+php -S 0.0.0.0:8082 > /tmp/grandkid-php-server.log 2>&1 &
 echo "PHP server PID: $!"
 
 echo "Starting Next.js dev server on port 3002..."
