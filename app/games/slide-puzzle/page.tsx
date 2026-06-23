@@ -387,8 +387,17 @@ export default function SlidePuzzlePage() {
                 return (
                   <Box
                     key={value}
+                    role="button"
+                    tabIndex={phase !== 'play' || solving ? -1 : 0}
+                    aria-label={`Tile ${tile.homeRow * gridSize + tile.homeCol + 1}`}
                     className={styles.tile}
                     onClick={() => handleTileClick(index)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleTileClick(index);
+                      }
+                    }}
                     sx={{
                       width: `${tilePct}%`,
                       height: `${tilePct}%`,

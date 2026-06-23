@@ -333,8 +333,17 @@ export default function WordSearchPage() {
                         return (
                           <Box
                             key={c}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`Letter ${letter}, row ${r + 1} column ${c + 1}`}
                             className={`${styles.gridCell} ${isFound ? styles.cellFound : ''} ${isStart && !isError ? styles.cellSelected : ''} ${isError ? styles.cellError : ''}`}
                             onClick={() => handleCellClick(r, c)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleCellClick(r, c);
+                              }
+                            }}
                           >
                             {letter}
                           </Box>
