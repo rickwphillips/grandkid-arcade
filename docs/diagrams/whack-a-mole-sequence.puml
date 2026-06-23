@@ -1,0 +1,126 @@
+@startuml whack-a-mole-sequence
+title Whack-a-Mole — Sequence Diagram
+
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 8
+skinparam sequence {
+  ParticipantBackgroundColor #EEF2FF
+  ParticipantBorderColor #6366F1
+  LifeLineBorderColor #A5B4FC
+  ActorBackgroundColor #F0FDF4
+  ActorBorderColor #16A34A
+}
+
+actor User
+participant "WhackAMolePage" as Page
+participant "Spawner\n(setInterval)" as Spawner
+participant "Countdown\n(setInterval)" as Timer
+participant "sounds.ts" as Audio
+participant "api.ts" as API
+
+activate User
+
+== Phase: select ==
+
+User -> Page : click difficulty (easy/medium/hard)
+activate Page
+  Page -> Page : startGame(diff)\nclearRemovalTimers / reset score,hits\ntimeLeft=30 / setPhase('playing')
+  activate Page
+  deactivate Page
+deactivate Page
+
+== Phase: playing — Countdown loop ==
+
+[-> Timer : useEffect mounts setInterval(1000ms)
+activate Timer
+  Timer -> Page : setTimeLeft(t-1)
+  note right of Timer
+    Each tick decrements timeLeft.
+    When t <= 1: setPhase('done'),
+    setShowWinBadge(true), playEnd()
+  end note
+deactivate Timer
+
+== Phase: playing — Spawn loop ==
+
+[-> Spawner : useEffect mounts setInterval(SETTINGS.spawnMs)
+activate Spawner
+  Spawner -> Page : setActiveMoles(prev)
+  activate Page
+    Page -> Page : if prev.size >= maxMoles → skip
+    Page -> Page : pick random empty hole (of 9)
+    Page -> Page : roll golden (GOLDEN_CHANCE,\nnot back-to-back via lastSpawnWasGolden)
+    Page -> Page : schedule setTimeout(lifeMs) auto-despawn\n→ removalTimers.push(t)
+  return new Map([...prev, [hole, type]])
+deactivate Spawner
+
+== Phase: playing — Player whacks ==
+
+User -> Page : onPointerDown on hole
+activate Page
+  Page -> Page : triggerMalletStrike() (mallet animation)
+  Page -> Page : handleWhack(hole)\nguard: phase='playing' && activeMoles.has(hole)
+
+  alt mole present
+    alt golden mole
+      Page -> Audio : playGoldenWhack()
+      activate Audio
+      return
+    else normal mole
+      Page -> Audio : playWhack()
+      activate Audio
+      return
+    end
+
+    Page -> Page : delete hole from activeMoles
+    Page -> Page : justHit.add(hole) → setTimeout 300ms clears flash
+    Page -> Page : score += pts × (golden ? 10 : 1)\nhits += 1
+  else empty hole
+    Page -> Page : ignored (no mole)
+  end
+deactivate Page
+
+== Phase: playing — Auto-despawn ==
+
+[-> Page : removalTimers setTimeout(lifeMs) fires
+activate Page
+  Page -> Page : setActiveMoles → delete hole (mole hides)
+deactivate Page
+
+== Phase: done (time up) ==
+
+[-> Page : Countdown reaches 0
+activate Page
+  Page -> Page : setPhase('done') / setShowWinBadge(true)
+  Page -> Audio : playEnd()
+  activate Audio
+  return
+
+  Page -> Page : useEffect phase==='done':\nclearRemovalTimers / setActiveMoles(empty)
+
+  alt grandkid selected && !scoreSubmitted
+    Page -> Page : setScoreSubmitted(true)
+    Page -> API : submitScore({ grandkid_id, 'whack-a-mole',\nscore, completed: true })
+    activate API
+    return 200 OK (.catch ignored)
+  end
+
+  Page -> Page : WinBadge "Time's up!"\nshows score + "{hits} moles whacked"
+deactivate Page
+
+== Replay ==
+
+User -> Page : click "Play Again"
+activate Page
+  Page -> Page : playAgain() → startGame(difficulty)\n(same difficulty, fresh round)
+deactivate Page
+
+User -> Page : click "New Difficulty"
+activate Page
+  Page -> Page : newDifficulty()\nclearRemovalTimers / setPhase('select')
+deactivate Page
+
+deactivate User
+
+@enduml

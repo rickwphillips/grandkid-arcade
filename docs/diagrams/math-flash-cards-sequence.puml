@@ -1,0 +1,112 @@
+@startuml math-flash-cards-sequence
+title Math Flash Cards — Sequence Diagram
+
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 8
+skinparam sequence {
+  ParticipantBackgroundColor #EEF2FF
+  ParticipantBorderColor #6366F1
+  LifeLineBorderColor #A5B4FC
+  ActorBackgroundColor #F0FDF4
+  ActorBorderColor #16A34A
+}
+
+actor User
+participant "MathFlashCardsPage" as Page
+participant "generateCard()" as Logic
+participant "api.ts" as API
+
+activate User
+
+== Phase: select ==
+
+User -> Page : click difficulty (Easy / Medium / Hard)
+activate Page
+  Page -> Page : startGame(diff) → setDifficulty(diff)
+
+  loop 10 cards (CARDS_PER_GAME)
+    Page -> Logic : generateCard(diff)
+    activate Logic
+    return Card { question, answer, choices[4] }
+  end
+
+  Page -> Page : setCards / setCardIndex(0) / setScore(0)\nsetCorrect(0) / reset answerState\nsetScoreSubmitted(false) / setPhase('play')
+  activate Page
+  deactivate Page
+deactivate Page
+
+== Phase: play - Answer a Card ==
+
+User -> Page : click / Enter on a choice
+activate Page
+  Page -> Page : handleChoice — guard answerState==='idle'
+  activate Page
+  deactivate Page
+
+  Page -> Page : setSelectedChoice(choice)\nisCorrect = choice === cards[cardIndex].answer\nsetAnswerState('correct' | 'wrong')
+  activate Page
+  deactivate Page
+
+  alt isCorrect
+    Page -> Page : setScore(+10) / setCorrect(+1)\n(card border + tile flash green)
+    activate Page
+    deactivate Page
+  else wrong
+    Page -> Page : tile flash red, correct tile flashes green
+    activate Page
+    deactivate Page
+  end
+
+  note right of Page
+    1000ms setTimeout, then advance
+  end note
+
+  alt next >= CARDS_PER_GAME (last card)
+    Page -> Page : setPhase('done') / setShowWinBadge(true)
+    activate Page
+    deactivate Page
+  else more cards
+    Page -> Page : setCardIndex(+1)\nsetAnswerState('idle') / setSelectedChoice(null)
+    activate Page
+    deactivate Page
+  end
+deactivate Page
+
+== Phase: done — Submit Score ==
+
+[-> Page : useEffect: phase==='done'
+activate Page
+  alt not scoreSubmitted && selected
+    Page -> Page : setScoreSubmitted(true)
+    activate Page
+    deactivate Page
+
+    Page -> API : submitScore({ grandkid_id: selected.id,\ngame_slug: 'math-flash-cards', score, completed: true })
+    activate API
+    return resolves (errors swallowed via .catch)
+  end
+
+  Page -> Page : WinBadge shows score +\n"correct/10" (+ "saved for {name}")
+  activate Page
+  deactivate Page
+deactivate Page
+
+== Replay ==
+
+alt Play Again
+  User -> Page : click "Play Again"
+  activate Page
+    Page -> Page : playAgain() → startGame(difficulty)
+    note right of Page : regenerates 10 cards, same difficulty
+    deactivate Page
+else New Difficulty
+  User -> Page : click "New Difficulty"
+  activate Page
+    Page -> Page : newDifficulty() → setPhase('select')\nclear cards / cardIndex(0)
+    deactivate Page
+end
+
+deactivate User
+
+@enduml

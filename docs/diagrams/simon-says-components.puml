@@ -1,0 +1,83 @@
+@startuml simon-says-components
+title Simon Says — Component Architecture
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FAFAFA
+skinparam component {
+  BackgroundColor #EEF2FF
+  BorderColor #6366F1
+  FontColor #1E1B4B
+}
+skinparam package {
+  BackgroundColor #F0FDF4
+  BorderColor #16A34A
+  FontColor #14532D
+}
+skinparam note {
+  BackgroundColor #FFFBEB
+  BorderColor #D97706
+}
+
+package "app/games/simon-says/" {
+  component "page.tsx\n**SimonSaysPage**" as Page
+
+  package "Game State" {
+    component "phase\n'select' | 'showing' | 'input' | 'done'" as PhaseState
+    component "difficulty: 'easy'|'medium'|'hard'\nsequence: number[] (color indices)\nplayerInput: number[]" as SeqState
+    component "round: number\nscore: number\nactiveButton: number | null" as ProgressState
+    component "showWinBadge: boolean\nscoreSubmitted: boolean" as DoneState
+  }
+
+  component "**Game Logic** (inline)" as Logic
+  note right of Logic
+    startGame(diff)
+      → seeds sequence=[rand 0..3], round=1
+    showing useEffect:
+      flashes each color via setTimeout
+      i*(flash+gap) on, +flash off
+      then setPhase('input')
+    handleButtonPress(idx)
+      → compare idx vs sequence[input.length]
+      → wrong: playLose() / setPhase('done')
+      → match & full: +POINTS, append rand
+        color, setPhase('showing')
+    SPEEDS[diff] = { flash, gap }
+    POINTS[diff] = 5 | 10 | 15
+  end note
+
+  component "**sounds.ts**" as Sounds
+  note right of Sounds
+    playColor(idx)  COLOR_FREQS
+      [310,415,209,252] Hz sine
+    playLose()  5-note descending
+      triangle (523→262)
+    isMuted() gate via lib/mute
+  end note
+}
+
+package "app/components/ & lib/" {
+  component "**PageContainer.tsx**\ntitle / subtitle wrapper" as PageCont
+  component "**WinBadge.tsx**\noverlay on game over" as WinBadge
+  component "**FloatingLoveMessages.tsx**\nactive during input phase" as FLM
+  component "**useGrandkid()**\nselected grandkid from localStorage" as Hook
+  component "**api.ts**\nsubmitScore()" as API
+}
+
+Page --> Logic : startGame / showing effect\nhandleButtonPress
+Page --> Sounds : playColor on flash & press\nplayLose on wrong press
+Page --> PageCont : wraps both phases
+Page --> WinBadge : visible when done && showWinBadge
+Page --> FLM : active={phase==='input'}
+Page --> Hook : selected grandkid
+Page --> API : submitScore\n(on phase==='done', once)
+
+note bottom of Page
+  **Sequence growth**: starts at length 1,
+  +1 random color each completed round.
+  **Watch phase** ('showing'): board locked,
+  tabIndex=-1, colors auto-flash.
+  **Input phase** ('input'): pads clickable,
+  must reproduce full sequence in order.
+end note
+
+@enduml

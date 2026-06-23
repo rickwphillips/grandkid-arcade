@@ -1,0 +1,84 @@
+@startuml whack-a-mole-components
+title Whack-a-Mole — Component Architecture
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FAFAFA
+skinparam component {
+  BackgroundColor #EEF2FF
+  BorderColor #6366F1
+  FontColor #1E1B4B
+}
+skinparam package {
+  BackgroundColor #F0FDF4
+  BorderColor #16A34A
+  FontColor #14532D
+}
+skinparam note {
+  BackgroundColor #FFFBEB
+  BorderColor #D97706
+}
+
+package "app/games/whack-a-mole/" {
+  component "page.tsx\n**WhackAMolePage**" as Page
+
+  package "Game State" {
+    component "phase\n'select' | 'playing' | 'done'" as PhaseState
+    component "activeMoles: Map<hole, 'normal'|'golden'>\n(0..8, max = maxMoles)\njustHit: Set<hole> (300ms hit flash)" as MoleState
+    component "score: number\nhits: number\ntimeLeft: number (counts 30→0)" as ScoreState
+    component "difficulty: 'easy'|'medium'|'hard'\nshowWinBadge / scoreSubmitted" as ModeState
+  }
+
+  package "Timer Refs" {
+    component "removalTimers: setTimeout[]\n(per-mole auto-despawn handles)" as RemovalRef
+    component "lastSpawnWasGolden: boolean\n(prevents back-to-back golden)" as GoldenRef
+    component "malletWrapperRef / malletImgRef\n(cursor follow + strike animation)" as MalletRef
+  }
+
+  component "**Constants & SETTINGS**" as Config
+  note right of Config
+    HOLES = 9 (3×3 grid)
+    ROUND_SECONDS = 30
+    GOLDEN_CHANCE = 0.15 (~1-in-7)
+    easy:   spawn 1200 / life 1600 / 1 mole / 5 pts
+    medium: spawn  800 / life 1100 / 2 moles / 10 pts
+    hard:   spawn  500 / life  750 / 3 moles / 15 pts
+    golden hit = pts × 10
+  end note
+
+  component "**sounds.ts**" as Sounds
+  note right of Sounds
+    playWhack()        180+120 Hz square thud
+    playGoldenWhack()  B5/Eb6/F#6/B6 triangle bell
+    playEnd()          C5-E5-G5-C6 sine fanfare
+  end note
+}
+
+package "app/components/ & lib/" {
+  component "**WinBadge.tsx**\n\"Time's up!\" overlay on done" as WinBadge
+  component "**FloatingLoveMessages.tsx**\nactive while phase==='playing'" as FLM
+  component "**PageContainer.tsx**\ntitle/subtitle wrapper" as PC
+  component "**useGrandkid()**\nselected grandkid from localStorage" as Hook
+  component "**api.ts** submitScore()\n**ASSET_BASE** (mole/mallet imgs)" as API
+}
+
+Page --> Config : reads SETTINGS[difficulty]
+Page --> Sounds : whack / golden whack / end
+Page --> WinBadge : visible on phase==='done'
+Page --> FLM : active={phase==='playing'}
+Page --> PC : title="Whack-a-Mole"
+Page --> Hook : selected grandkid ID
+Page --> API : submitScore on done\n(once, scoreSubmitted guard)
+
+note bottom of Page
+  **Timer-driven loops** (two intervals, gated on phase==='playing'):
+  1. Countdown: setInterval 1000ms → timeLeft−1; at 1 → phase='done' + playEnd()
+  2. Spawner: setInterval SETTINGS.spawnMs → if size<maxMoles, pick random
+     empty hole, roll golden, schedule setTimeout(lifeMs) auto-despawn
+
+  **Whack**: handleWhack(hole) → only if activeMoles.has(hole)
+    golden → playGoldenWhack(), else playWhack()
+    delete mole immediately, flash justHit 300ms, score += pts(×10 if golden)
+  Both intervals cleared on phase change; removalTimers flushed on 'done'.
+end note
+
+@enduml

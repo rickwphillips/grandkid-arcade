@@ -1,0 +1,82 @@
+@startuml jigsaw-puzzle-components
+title Jigsaw Puzzle — Component Architecture
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FAFAFA
+skinparam component {
+  BackgroundColor #EEF2FF
+  BorderColor #6366F1
+  FontColor #1E1B4B
+}
+skinparam package {
+  BackgroundColor #F0FDF4
+  BorderColor #16A34A
+  FontColor #14532D
+}
+skinparam note {
+  BackgroundColor #FFFBEB
+  BorderColor #D97706
+}
+
+package "app/games/jigsaw-puzzle/" {
+  component "page.tsx\n**JigsawPuzzlePage**" as Page
+
+  package "Game State" {
+    component "phase\n'select' | 'play' | 'win'" as PhaseState
+    component "images: PuzzleImage[]\nselectedImageId: number | null\nloadingImages: boolean" as ImageState
+    component "difficulty: 'easy'|'medium'|'hard'\nimageDataUri: string\nstarting: boolean" as ConfigState
+    component "showWinBadge / scoreSubmitted\nhbCanvasRef (headbreaker Canvas)" as WinState
+  }
+
+  component "**puzzleLogic.ts**" as Logic
+  note right of Logic
+    DIFFICULTY_CONFIG: Record<Difficulty,
+      { rows, cols, label, pieceSize, proximity }>
+      easy 3×3 / medium 4×4 / hard 5×5
+    defaultDifficultyForAge(age)
+      → Difficulty (≤7 easy, ≤12 medium, else hard)
+    computeCoverCrop(natW, natH, tgtW, tgtH)
+      → { srcX, srcY, srcW, srcH } (centered cover)
+  end note
+
+  component "prescaleImage()\nlocal helper → HTMLCanvasElement\n(cover-crop to CANVAS_SIZE 520)" as Prescale
+
+  component "**headbreaker** (dynamic import)\nManufacturer / Canvas / anchor\npainters.Konva — drag-to-connect" as HB
+  note right of HB
+    autogenerateWithManufacturer()
+    shuffle(0.85) / draw()
+    stage 'dragend' → in-bounds nudge
+      (union-find cluster + translate)
+    attachSolvedValidator()
+    onValid(valid) → win
+  end note
+}
+
+package "app/components/ & lib/" {
+  component "**WinBadge.tsx**\noverlay on phase==='win'" as WinBadge
+  component "**FloatingLoveMessages.tsx**\nactive during play phase" as FLM
+  component "**PageContainer.tsx**\ntitle / subtitle wrapper" as PC
+  component "**useGrandkid()**\nselected grandkid from localStorage" as Hook
+  component "**useThemeMode()**\nlight/dark → stroke color" as Theme
+  component "**api.ts**\ngetPuzzleImages() / getPuzzleImage(id)\nsubmitScore()" as API
+}
+
+Page --> Logic : DIFFICULTY_CONFIG\ndefaultDifficultyForAge / computeCoverCrop
+Page --> Prescale : prescaleImage(img, 520, 520)
+Prescale --> Logic : computeCoverCrop()
+Page --> HB : build / shuffle / validate puzzle
+Page --> WinBadge : visible on phase==='win'
+Page --> FLM : active={phase==='play'}
+Page --> PC : title / subtitle
+Page --> Hook : selected grandkid (id, age, name)
+Page --> Theme : mode → strokeColor
+Page --> API : getPuzzleImages (select)\ngetPuzzleImage (start)\nsubmitScore (win)
+
+note bottom of Page
+  **Solve Flow** (headbreaker / Konva):
+  onValid(true) → 500ms delay →
+  setPhase('win') + setShowWinBadge(true)
+  Fixed score of 100 submitted once per win.
+end note
+
+@enduml

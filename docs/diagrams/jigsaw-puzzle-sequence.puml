@@ -1,0 +1,155 @@
+@startuml jigsaw-puzzle-sequence
+title Jigsaw Puzzle — Sequence Diagram
+
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 8
+skinparam sequence {
+  ParticipantBackgroundColor #EEF2FF
+  ParticipantBorderColor #6366F1
+  LifeLineBorderColor #A5B4FC
+  ActorBackgroundColor #F0FDF4
+  ActorBorderColor #16A34A
+}
+
+actor User
+participant "JigsawPuzzlePage" as Page
+participant "puzzleLogic.ts" as Logic
+participant "headbreaker\n(Konva Canvas)" as HB
+participant "api.ts" as API
+
+activate User
+
+== Mount: load images ==
+
+[-> Page : useEffect (on mount)
+activate Page
+  Page -> API : getPuzzleImages()
+  activate API
+  return PuzzleImage[]
+
+  Page -> Page : setImages / setSelectedImageId(random)
+  activate Page
+  deactivate Page
+deactivate Page
+
+[-> Page : useEffect (selected changes)
+activate Page
+  Page -> Logic : defaultDifficultyForAge(selected.age)
+  activate Logic
+  return 'easy' | 'medium' | 'hard'
+
+  Page -> Page : setDifficulty(...)
+  activate Page
+  deactivate Page
+deactivate Page
+
+== Phase: select ==
+
+User -> Page : choose image + difficulty chip, click "Start!"
+activate Page
+  Page -> Page : setStarting(true)
+  Page -> API : getPuzzleImage(selectedImageId)
+  activate API
+  return PuzzleImageWithData { image_data }
+
+  Page -> Page : setImageDataUri / setScoreSubmitted(false)\nsetShowWinBadge(false) / setPhase('play')
+  activate Page
+  deactivate Page
+  Page -> Page : setStarting(false)
+deactivate Page
+
+== Phase: play - build puzzle ==
+
+[-> Page : useEffect (phase==='play' && imageDataUri)
+activate Page
+  Page -> Page : new Image(); img.src = imageDataUri
+  Page -> Page : img.onload → dynamic import('headbreaker')
+
+  Page -> Logic : DIFFICULTY_CONFIG[difficulty]
+  activate Logic
+  return { rows, cols, pieceSize, proximity }
+
+  Page -> Page : prescaleImage(img, 520, 520)
+  activate Page
+    Page -> Logic : computeCoverCrop(natW, natH, 520, 520)
+    activate Logic
+    return { srcX, srcY, srcW, srcH }
+  deactivate Page
+
+  Page -> HB : new Manufacturer() / withDimensions(cols, rows)\nwithHeadAt(anchor(r, r))
+  activate HB
+  return
+
+  Page -> HB : new Canvas(container, { pieceSize, proximity, image })\nautogenerateWithManufacturer() / shuffle(0.85) / draw()
+  activate HB
+  return scattered pieces drawn
+
+  Page -> HB : stage.on('dragend', handler)\nattachSolvedValidator() / onValid(cb)
+  activate HB
+  return
+deactivate Page
+
+== Phase: play - drag interaction ==
+
+User -> HB : drag a piece (or connected cluster)
+activate HB
+  HB -> HB : snap to neighbors within proximity
+  HB --> Page : 'dragend' event
+  activate Page
+    Page -> Page : union-find cluster by snapDist (pieceSize*1.02)\ncompute cluster bounding boxes
+    Page -> HB : hbPiece.translate(dx, dy)\n(nudge out-of-bounds clusters back in)
+    activate HB
+    return
+    Page -> HB : konvaLayer.batchDraw()
+    activate HB
+    return
+  deactivate Page
+
+  HB -> HB : attachSolvedValidator: all pieces connected?
+  alt puzzle solved
+    HB --> Page : onValid(true)
+    activate Page
+      Page -> Page : setTimeout 500ms →\nsetPhase('win') / setShowWinBadge(true)
+      activate Page
+      deactivate Page
+    deactivate Page
+  else not yet
+    HB --> Page : onValid(false) — keep playing
+  end
+deactivate HB
+
+== Phase: win ==
+
+[-> Page : useEffect (phase==='win' && !scoreSubmitted && selected)
+activate Page
+  Page -> Page : setScoreSubmitted(true)
+  Page -> API : submitScore({ grandkid_id, 'jigsaw-puzzle',\nscore: 100, completed: true })
+  activate API
+  return 200 OK
+deactivate Page
+
+note over Page
+  Win view swaps the Konva canvas for the full
+  completed <img>, shows WinBadge + actions.
+end note
+
+alt Play Again
+  User -> Page : click "Play Again"
+  activate Page
+    Page -> Page : setShowWinBadge(false) / setScoreSubmitted(false)\nsetPhase('play')  (same image, re-shuffled)
+    activate Page
+    deactivate Page
+  deactivate Page
+else New Image
+  User -> Page : click "New Image"
+  activate Page
+    Page -> Page : setPhase('select') / setImageDataUri('')\nreset badge + score flags
+    activate Page
+    deactivate Page
+  deactivate Page
+end
+
+deactivate User
+
+@enduml

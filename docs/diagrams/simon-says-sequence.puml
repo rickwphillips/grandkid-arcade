@@ -1,0 +1,141 @@
+@startuml simon-says-sequence
+title Simon Says — Sequence Diagram
+
+skinparam backgroundColor #FAFAFA
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 8
+skinparam sequence {
+  ParticipantBackgroundColor #EEF2FF
+  ParticipantBorderColor #6366F1
+  LifeLineBorderColor #A5B4FC
+  ActorBackgroundColor #F0FDF4
+  ActorBorderColor #16A34A
+}
+
+actor User
+participant "SimonSaysPage" as Page
+participant "sounds.ts" as Audio
+participant "api.ts" as API
+
+activate User
+
+== Phase: select ==
+
+User -> Page : click difficulty (Easy / Medium / Hard)
+activate Page
+  Page -> Page : startGame(diff)\nfirst = floor(random*4)
+  activate Page
+  deactivate Page
+
+  Page -> Page : setSequence([first]) / setRound(1) / setScore(0)\nsetPlayerInput([]) / setPhase('showing')
+  activate Page
+  deactivate Page
+deactivate Page
+
+== Phase: showing — computer plays sequence ==
+
+[-> Page : useEffect (phase==='showing')
+activate Page
+  note right of Page
+    SPEEDS[difficulty] = { flash, gap }
+    schedule timeouts per color
+  end note
+
+  loop each colorIdx in sequence (index i)
+    Page -> Page : setTimeout i*(flash+gap):\nsetActiveButton(colorIdx)
+    activate Page
+    deactivate Page
+
+    Page -> Audio : playColor(colorIdx)\nCOLOR_FREQS[idx] Hz
+    activate Audio
+    return
+
+    Page -> Page : setTimeout i*(flash+gap)+flash:\nsetActiveButton(null)
+    activate Page
+    deactivate Page
+  end
+
+  Page -> Page : setTimeout length*(flash+gap):\nsetPlayerInput([]) / setPhase('input')
+  activate Page
+  deactivate Page
+deactivate Page
+
+== Phase: input — player repeats ==
+
+loop until sequence reproduced or wrong press
+
+  User -> Page : click / Enter / Space on color pad idx
+  activate Page
+    Page -> Page : guard: phase==='input'
+    activate Page
+    deactivate Page
+
+    Page -> Page : setActiveButton(idx)\nsetTimeout 150ms → setActiveButton(null)
+    activate Page
+    deactivate Page
+
+    Page -> Audio : playColor(idx)
+    activate Audio
+    return
+
+    Page -> Page : expected = sequence[playerInput.length]
+
+    alt idx !== expected (wrong)
+      Page -> Audio : playLose() (descending)
+      activate Audio
+      return
+
+      Page -> Page : setTimeout 200ms:\nsetPhase('done') / setShowWinBadge(true)
+      activate Page
+      deactivate Page
+
+    else idx === expected (correct)
+      Page -> Page : setPlayerInput([...playerInput, idx])
+      activate Page
+      deactivate Page
+
+      alt newInput.length === sequence.length (round complete)
+        Page -> Page : setScore(s + POINTS[difficulty])\nnext = floor(random*4)
+        activate Page
+        deactivate Page
+
+        Page -> Page : setTimeout 600ms:\nsetSequence([...prev, next]) / setRound(r+1)\nsetPhase('showing')
+        activate Page
+        deactivate Page
+        note over Page : sequence grows by 1 → back to "showing"
+      end
+    end
+  deactivate Page
+
+end
+
+== Phase: done ==
+
+[-> Page : useEffect (phase==='done', !scoreSubmitted, selected)
+activate Page
+  Page -> Page : setScoreSubmitted(true)
+  activate Page
+  deactivate Page
+
+  Page -> API : submitScore({ grandkid_id, 'simon-says',\n  score, completed: true })
+  activate API
+  return 200 OK
+deactivate Page
+
+User -> Page : click "Play Again"
+activate Page
+  Page -> Page : startGame(difficulty)\nre-seed sequence / setPhase('showing')
+  activate Page
+  deactivate Page
+deactivate Page
+
+User -> Page : click "New Difficulty"
+activate Page
+  Page -> Page : setPhase('select') / clear sequence & input / round=0
+  activate Page
+  deactivate Page
+deactivate Page
+
+deactivate User
+
+@enduml

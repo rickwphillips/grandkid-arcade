@@ -1,0 +1,82 @@
+@startuml math-flash-cards-components
+title Math Flash Cards — Component Architecture
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FAFAFA
+skinparam component {
+  BackgroundColor #EEF2FF
+  BorderColor #6366F1
+  FontColor #1E1B4B
+}
+skinparam package {
+  BackgroundColor #F0FDF4
+  BorderColor #16A34A
+  FontColor #14532D
+}
+skinparam note {
+  BackgroundColor #FFFBEB
+  BorderColor #D97706
+}
+
+package "app/games/math-flash-cards/" {
+  component "page.tsx\n**MathFlashCardsPage**" as Page
+
+  package "Game State" {
+    component "phase\n'select' | 'play' | 'done'" as PhaseState
+    component "difficulty: 'easy'|'medium'|'hard'\ncards: Card[] (10)\ncardIndex: number" as RoundState
+    component "score: number\ncorrect: number" as ScoreState
+    component "answerState: 'idle'|'correct'|'wrong'\nselectedChoice: number | null" as AnswerStateVar
+    component "showWinBadge: boolean\nscoreSubmitted: boolean" as DoneState
+  }
+
+  component "**generateCard(difficulty)** (inline)" as Logic
+  note right of Logic
+    Builds one Card { question, answer, choices }:
+      easy   → addition, operands 0–10
+      medium → add OR subtract, operands 0–20
+              (subtraction kept non-negative)
+      hard   → +, −, ×, ÷ (random of 4)
+              ÷ uses exact quotients, × 1–12
+    Distractors: 3 unique near-misses
+      (answer ± 0–4, ≥ 0), padded sequentially
+    choices = [answer + distractors] shuffled (4 total)
+  end note
+
+  component "**startGame(diff)** / **handleChoice(choice)**\n**playAgain()** / **newDifficulty()**" as Handlers
+  note right of Handlers
+    startGame: build 10 cards, reset all state, phase='play'
+    handleChoice: lock if not idle, mark correct/wrong,
+      +10 pts on correct, advance after 1000ms
+      (last card → phase='done', showWinBadge)
+    playAgain: startGame(difficulty)
+    newDifficulty: phase='select', clear cards
+  end note
+}
+
+package "app/components/ & lib/" {
+  component "**PageContainer.tsx**\ntitle/subtitle wrapper" as PageContainer
+  component "**WinBadge.tsx**\noverlay on done" as WinBadge
+  component "**FloatingLoveMessages.tsx**\nactive during play phase" as FLM
+  component "**useGrandkid()**\nselected grandkid from localStorage" as Hook
+  component "**api.ts**\nsubmitScore()" as API
+}
+
+Page --> Logic : generateCard ×10 on startGame
+Page --> Handlers : choice clicks / play again
+Page --> PageContainer : wraps every phase
+Page --> WinBadge : visible={phase==='done' && showWinBadge}
+Page --> FLM : active={phase==='play'} (needs selected)
+Page --> Hook : selected grandkid
+Page --> API : submitScore on done\n(useEffect, once per game)
+
+note bottom of Page
+  **No AI, no sounds, no sibling logic file** —
+  card generation is the inline generateCard() helper.
+
+  **10 multiple-choice cards**, 4 choices each,
+  +10 pts per correct (max 100). Progress bar tracks
+  cardIndex; answer flash (green/red) holds 1000ms,
+  then auto-advances. Score submitted once on done.
+end note
+
+@enduml
