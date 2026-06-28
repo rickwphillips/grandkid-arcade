@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { AuthGuard, useAuth } from '@/app/components/AuthGuard';
-import { renderHook } from '@testing-library/react';
 
 const AUTH_TOKEN_KEY = 'auth_token';
 
