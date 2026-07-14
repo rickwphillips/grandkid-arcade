@@ -88,6 +88,10 @@ export default function SimonSaysPage() {
   const handleButtonPress = useCallback(
     (colorIdx: number) => {
       if (phase !== 'input') return;
+      // Round already complete: phase stays 'input' during the 600ms pause
+      // before the next sequence shows. Ignore extra taps so they don't read
+      // sequence[playerInput.length] (undefined) and trigger a false game over.
+      if (playerInput.length >= sequence.length) return;
 
       // Flash the pressed button briefly
       setActiveButton(colorIdx);

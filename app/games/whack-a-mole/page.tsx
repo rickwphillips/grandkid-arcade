@@ -40,8 +40,18 @@ export default function WhackAMolePage() {
   const [showWinBadge, setShowWinBadge] = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
 
-  const removalTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Keyed by hole so a mole's auto-removal timer can be cancelled when it's
+  // whacked; otherwise a stale timer fires later and deletes a freshly-spawned
+  // mole in the same hole.
+  const removalTimers = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
   const lastSpawnWasGolden = useRef(false);
+  // Mirror activeMoles so the spawner can read the current set without doing its
+  // side effects (scheduling timers, flipping the golden flag) inside a setState
+  // updater — those ran twice under React StrictMode.
+  const activeMolesRef = useRef(activeMoles);
+  useEffect(() => {
+    activeMolesRef.current = activeMoles;
+  }, [activeMoles]);
   const malletWrapperRef = useRef<HTMLDivElement>(null);
   const malletImgRef = useRef<HTMLImageElement>(null);
 
@@ -70,7 +80,7 @@ export default function WhackAMolePage() {
 
   const clearRemovalTimers = useCallback(() => {
     removalTimers.current.forEach(clearTimeout);
-    removalTimers.current = [];
+    removalTimers.current.clear();
   }, []);
 
   const startGame = useCallback((diff: Difficulty) => {
@@ -87,22 +97,25 @@ export default function WhackAMolePage() {
     setPhase('playing');
   }, [clearRemovalTimers]);
 
-  // Countdown timer
+  // Countdown timer — the updater stays pure (just decrements). Ending the game
+  // is a side effect, so it lives in its own effect below; doing it inside the
+  // setTimeLeft updater fired playEnd()/setPhase twice under React StrictMode.
   useEffect(() => {
     if (phase !== 'playing') return;
     const interval = setInterval(() => {
-      setTimeLeft((t) => {
-        if (t <= 1) {
-          setPhase('done');
-          setShowWinBadge(true);
-          playEnd();
-          return 0;
-        }
-        return t - 1;
-      });
+      setTimeLeft((t) => Math.max(0, t - 1));
     }, 1000);
     return () => clearInterval(interval);
   }, [phase]);
+
+  // End the game when the clock runs out. The phase guard makes this fire once.
+  useEffect(() => {
+    if (phase === 'playing' && timeLeft <= 0) {
+      setPhase('done');
+      setShowWinBadge(true);
+      playEnd();
+    }
+  }, [phase, timeLeft, playEnd]);
 
   // Mole spawner
   useEffect(() => {
@@ -110,29 +123,31 @@ export default function WhackAMolePage() {
     const { spawnMs, lifeMs, maxMoles } = SETTINGS[difficulty];
 
     const interval = setInterval(() => {
-      setActiveMoles((prev) => {
-        if (prev.size >= maxMoles) return prev;
-        const available = Array.from({ length: HOLES }, (_, i) => i).filter(
-          (i) => !prev.has(i),
-        );
-        if (available.length === 0) return prev;
-        const hole = available[Math.floor(Math.random() * available.length)];
-        const type: MoleType =
-          !lastSpawnWasGolden.current && Math.random() < GOLDEN_CHANCE ? 'golden' : 'normal';
-        lastSpawnWasGolden.current = type === 'golden';
+      // Decide the spawn from the current moles (read via ref) and run all side
+      // effects here, in the interval body — never inside a setState updater.
+      const current = activeMolesRef.current;
+      if (current.size >= maxMoles) return;
+      const available = Array.from({ length: HOLES }, (_, i) => i).filter(
+        (i) => !current.has(i),
+      );
+      if (available.length === 0) return;
+      const hole = available[Math.floor(Math.random() * available.length)];
+      const type: MoleType =
+        !lastSpawnWasGolden.current && Math.random() < GOLDEN_CHANCE ? 'golden' : 'normal';
+      lastSpawnWasGolden.current = type === 'golden';
 
-        // Schedule auto-removal
-        const t = setTimeout(() => {
-          setActiveMoles((m) => {
-            const next = new Map(m);
-            next.delete(hole);
-            return next;
-          });
-        }, lifeMs);
-        removalTimers.current.push(t);
+      // Schedule auto-removal, keyed by hole so a whack can cancel it.
+      const t = setTimeout(() => {
+        removalTimers.current.delete(hole);
+        setActiveMoles((m) => {
+          const next = new Map(m);
+          next.delete(hole);
+          return next;
+        });
+      }, lifeMs);
+      removalTimers.current.set(hole, t);
 
-        return new Map([...prev, [hole, type]]);
-      });
+      setActiveMoles((prev) => new Map([...prev, [hole, type]]));
     }, spawnMs);
 
     return () => clearInterval(interval);
@@ -152,6 +167,14 @@ export default function WhackAMolePage() {
 
       const isGolden = activeMoles.get(hole) === 'golden';
       if (isGolden) playGoldenWhack(); else playWhack();
+
+      // Cancel this hole's pending auto-removal so it can't later delete a
+      // mole that respawns in the same hole.
+      const pending = removalTimers.current.get(hole);
+      if (pending) {
+        clearTimeout(pending);
+        removalTimers.current.delete(hole);
+      }
 
       // Remove mole immediately
       setActiveMoles((prev) => {
