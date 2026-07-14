@@ -61,9 +61,13 @@ switch ($_SERVER['REQUEST_METHOD']) {
             if (empty($input['word'])) sendError('word is required');
 
             $word = strtoupper(trim($input['word']));
+            // Match the generator's constraints (gameLogic.ts): it only places
+            // single words of 3+ letters that fit the grid (largest is 12, the
+            // hard difficulty). Anything outside that is counted in the theme but
+            // never appears in a puzzle, so reject it at add time.
             if (str_contains($word, ' ')) sendError('Words cannot contain spaces');
-            if (strlen($word) < 2) sendError('Word must be at least 2 characters');
-            if (strlen($word) > 50) sendError('Word must be 50 characters or fewer');
+            if (strlen($word) < 3) sendError('Word must be at least 3 characters');
+            if (strlen($word) > 12) sendError('Word must be 12 characters or fewer (largest grid is 12)');
 
             $stmt = $db->prepare(
                 'INSERT INTO word_search_words (theme_id, word) VALUES (?, ?)'

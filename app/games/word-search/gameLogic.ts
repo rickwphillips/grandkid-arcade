@@ -87,17 +87,52 @@ export function generateGrid(words: string[], difficulty: 'easy' | 'medium' | 'h
     }
   }
 
-  // Fill remaining empty cells with random uppercase letters
+  // Fill remaining empty cells with random letters, but re-roll the fill if it
+  // accidentally spells one of the target words somewhere it wasn't placed —
+  // checkSelection only accepts the placed instances, so such a phantom word
+  // would look correct to the player yet be rejected.
+  const expected = new Map<string, number>();
+  for (const pw of placedWords) expected.set(pw.word, (expected.get(pw.word) ?? 0) + 1);
+  const emptyCells: Array<[number, number]> = [];
+  for (let r = 0; r < size; r++)
+    for (let c = 0; c < size; c++) if (cells[r][c] === '') emptyCells.push([r, c]);
+
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const randLetter = () => letters[Math.floor(Math.random() * letters.length)];
+  let filled = cells;
+  for (let attempt = 0; attempt < 15; attempt++) {
+    const trial = cells.map((row) => [...row]);
+    for (const [r, c] of emptyCells) trial[r][c] = randLetter();
+    filled = trial;
+    const clean = selected.every((w) => countOccurrences(trial, w) <= (expected.get(w) ?? 0));
+    if (clean) break;
+  }
+
+  return { cells: filled, placedWords };
+}
+
+/** Count straight-line occurrences of `word` in any of the 8 directions. */
+function countOccurrences(cells: string[][], word: string): number {
+  const size = cells.length;
+  const dirs8 = [
+    [0, 1], [1, 0], [1, 1], [1, -1], [0, -1], [-1, 0], [-1, -1], [-1, 1],
+  ];
+  let count = 0;
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
-      if (cells[r][c] === '') {
-        cells[r][c] = letters[Math.floor(Math.random() * letters.length)];
+      for (const [dr, dc] of dirs8) {
+        const endR = r + dr * (word.length - 1);
+        const endC = c + dc * (word.length - 1);
+        if (endR < 0 || endR >= size || endC < 0 || endC >= size) continue;
+        let ok = true;
+        for (let i = 0; i < word.length; i++) {
+          if (cells[r + dr * i][c + dc * i] !== word[i]) { ok = false; break; }
+        }
+        if (ok) count++;
       }
     }
   }
-
-  return { cells, placedWords };
+  return count;
 }
 
 /**
