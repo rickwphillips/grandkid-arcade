@@ -27,6 +27,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         break;
 
     case 'POST':
+        requireAdmin();
         $input = getJSONInput();
         if (empty($input['name'])) sendError('Name is required');
         if (!isset($input['age']) || $input['age'] < 1) sendError('Valid age is required');
@@ -53,6 +54,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         break;
 
     case 'PUT':
+        requireAdmin();
         if (!isset($_GET['id'])) sendError('ID is required');
         $input = getJSONInput();
 
@@ -79,6 +81,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         break;
 
     case 'DELETE':
+        requireAdmin();
         if (!isset($_GET['id'])) sendError('ID is required');
         $stmt = $db->prepare('DELETE FROM grandkids WHERE id = ?');
         $stmt->execute([(int) $_GET['id']]);
