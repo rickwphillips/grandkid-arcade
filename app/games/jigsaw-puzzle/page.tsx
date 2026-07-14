@@ -241,7 +241,12 @@ export default function JigsawPuzzlePage() {
         hbCanvasRef.current = null;
       }
     };
-  }, [phase, imageDataUri, difficulty, mode]);
+    // `mode` is intentionally NOT a dep: it only sets a cosmetic piece stroke
+    // color at build time. Including it rebuilt and reshuffled the whole puzzle
+    // on a dark-mode toggle, wiping the player's progress. The game-area
+    // background still re-themes via a CSS class outside this effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, imageDataUri, difficulty]);
 
   useEffect(() => {
     if (phase !== 'win' || scoreSubmitted || !selected) return;

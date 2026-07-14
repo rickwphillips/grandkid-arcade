@@ -40,7 +40,10 @@ export default function WhackAMolePage() {
   const [showWinBadge, setShowWinBadge] = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
 
-  const removalTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Keyed by hole so a mole's auto-removal timer can be cancelled when it's
+  // whacked; otherwise a stale timer fires later and deletes a freshly-spawned
+  // mole in the same hole.
+  const removalTimers = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
   const lastSpawnWasGolden = useRef(false);
   const malletWrapperRef = useRef<HTMLDivElement>(null);
   const malletImgRef = useRef<HTMLImageElement>(null);
@@ -70,7 +73,7 @@ export default function WhackAMolePage() {
 
   const clearRemovalTimers = useCallback(() => {
     removalTimers.current.forEach(clearTimeout);
-    removalTimers.current = [];
+    removalTimers.current.clear();
   }, []);
 
   const startGame = useCallback((diff: Difficulty) => {
@@ -121,15 +124,16 @@ export default function WhackAMolePage() {
           !lastSpawnWasGolden.current && Math.random() < GOLDEN_CHANCE ? 'golden' : 'normal';
         lastSpawnWasGolden.current = type === 'golden';
 
-        // Schedule auto-removal
+        // Schedule auto-removal, keyed by hole so a whack can cancel it.
         const t = setTimeout(() => {
+          removalTimers.current.delete(hole);
           setActiveMoles((m) => {
             const next = new Map(m);
             next.delete(hole);
             return next;
           });
         }, lifeMs);
-        removalTimers.current.push(t);
+        removalTimers.current.set(hole, t);
 
         return new Map([...prev, [hole, type]]);
       });
@@ -152,6 +156,14 @@ export default function WhackAMolePage() {
 
       const isGolden = activeMoles.get(hole) === 'golden';
       if (isGolden) playGoldenWhack(); else playWhack();
+
+      // Cancel this hole's pending auto-removal so it can't later delete a
+      // mole that respawns in the same hole.
+      const pending = removalTimers.current.get(hole);
+      if (pending) {
+        clearTimeout(pending);
+        removalTimers.current.delete(hole);
+      }
 
       // Remove mole immediately
       setActiveMoles((prev) => {
