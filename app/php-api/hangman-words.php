@@ -55,7 +55,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $hint = isset($input['hint']) ? trim($input['hint']) : null;
         $difficulty = $input['difficulty'] ?? 'easy';
 
-        if (!in_array($difficulty, ['easy', 'medium', 'hard'])) {
+        if (!in_array($difficulty, ['easy', 'medium', 'hard'], true)) {
             sendError('difficulty must be easy, medium, or hard');
         }
 

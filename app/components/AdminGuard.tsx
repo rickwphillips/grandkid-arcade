@@ -97,7 +97,6 @@ export function AdminGuard({ children }: { children: ReactNode }) {
 
     setUser(tokenUser);
     setChecking(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (checking) {

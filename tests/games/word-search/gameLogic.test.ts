@@ -4,7 +4,6 @@ import {
   checkSelection,
   calcScore,
   getPlacedWordCells,
-  GRID_CONFIG,
 } from '@/app/games/word-search/gameLogic';
 
 const TEST_WORDS = ['CAT', 'DOG', 'BIRD', 'FISH', 'WOLF', 'BEAR', 'LION', 'DEER', 'FROG', 'CRAB', 'HAWK', 'MOLE'];

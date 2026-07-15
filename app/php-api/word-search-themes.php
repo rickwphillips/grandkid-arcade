@@ -91,7 +91,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $emoji = trim($input['emoji'] ?? '🔍');
         $description = isset($input['description']) ? trim($input['description']) : null;
 
-        if (!in_array($difficulty, ['easy', 'medium', 'hard'])) {
+        if (!in_array($difficulty, ['easy', 'medium', 'hard'], true)) {
             sendError('difficulty must be easy, medium, or hard');
         }
 
