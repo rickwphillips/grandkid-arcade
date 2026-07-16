@@ -43,3 +43,7 @@ deploy*.sh
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude Code local config + graphify knowledge graph (local-only)
+.claude/
+graphify-out/
