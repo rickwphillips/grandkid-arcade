@@ -8,6 +8,25 @@ import {
 
 const TEST_WORDS = ['CAT', 'DOG', 'BIRD', 'FISH', 'WOLF', 'BEAR', 'LION', 'DEER', 'FROG', 'CRAB', 'HAWK', 'MOLE'];
 
+describe('checkSelection edge cases', () => {
+  const grid = {
+    cells: [],
+    placedWords: [{ word: 'CAT', startRow: 0, startCol: 0, direction: [0, 1] as [number, number] }],
+  };
+
+  it('returns null for a single-cell selection (length < 2)', () => {
+    expect(checkSelection(grid, [0, 0], [0, 0])).toBeNull();
+  });
+
+  it('returns null for a non-straight selection', () => {
+    expect(checkSelection(grid, [0, 0], [1, 2])).toBeNull();
+  });
+
+  it('matches a word selected in reverse (end → start)', () => {
+    expect(checkSelection(grid, [0, 2], [0, 0])).toBe('CAT');
+  });
+});
+
 describe('generateGrid', () => {
   it("returns 8×8 cells for 'easy'", () => {
     const { cells } = generateGrid(TEST_WORDS, 'easy');

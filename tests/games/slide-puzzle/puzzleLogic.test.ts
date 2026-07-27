@@ -128,6 +128,12 @@ describe('calcScore', () => {
     const score = calcScore(1, 3);
     expect(score).toBe(100);
   });
+
+  it('uses fallback par/maxScore for an unknown grid size', () => {
+    // gridSize 7 not in the tables → par ?? 80, max ?? 150
+    const score = calcScore(80, 7);
+    expect(score).toBe(150);
+  });
 });
 
 describe('solvePuzzle', () => {
@@ -154,5 +160,18 @@ describe('solvePuzzle', () => {
   it('returns null for gridSize > 5', () => {
     const board = Array.from({ length: 36 }, (_, i) => i);
     expect(solvePuzzle(board, 6)).toBeNull();
+  });
+
+  it('solves a board containing linear conflicts', () => {
+    // [1,0,...] in row 0 and [7,6] in row 2 are goal-row tiles out of order →
+    // exercises the linear-conflict heuristic. Two inversions keep it solvable.
+    const board = [1, 0, 2, 3, 4, 5, 7, 6, 8];
+    const solution = solvePuzzle(board, 3);
+    expect(solution).not.toBeNull();
+    let b = [...board];
+    for (const idx of solution!) {
+      b = moveTile(b, 3, idx)!;
+    }
+    expect(isSolved(b)).toBe(true);
   });
 });

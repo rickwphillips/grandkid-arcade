@@ -85,4 +85,46 @@ describe('useGrandkid', () => {
     });
     expect(result.current.error).toBe('Network error');
   });
+
+  it('refresh re-fetches and replaces the grandkids list', async () => {
+    vi.mocked(api.getGrandkids).mockResolvedValue(mockGrandkids);
+    const { result } = renderHook(() => useGrandkid());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const updated = [
+      { id: 3, name: 'Cara', age: 5, interests: [], avatar_color: '#0f0', created_at: '2024-01-01' },
+    ];
+    vi.mocked(api.getGrandkids).mockResolvedValue(updated);
+    await act(async () => {
+      await result.current.refresh();
+    });
+    expect(result.current.grandkids).toEqual(updated);
+  });
+
+  it('leaves selection null when no grandkids are returned', async () => {
+    vi.mocked(api.getGrandkids).mockResolvedValue([]);
+    const { result } = renderHook(() => useGrandkid());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.selectedId).toBeNull();
+  });
+
+  it('leaves selection null when a saved id exists but the list is empty', async () => {
+    localStorage.setItem(STORAGE_KEY, '2');
+    vi.mocked(api.getGrandkids).mockResolvedValue([]);
+    const { result } = renderHook(() => useGrandkid());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.selectedId).toBeNull();
+  });
+
+  it('refresh silently keeps existing data when the re-fetch fails', async () => {
+    vi.mocked(api.getGrandkids).mockResolvedValue(mockGrandkids);
+    const { result } = renderHook(() => useGrandkid());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    vi.mocked(api.getGrandkids).mockRejectedValue(new Error('offline'));
+    await act(async () => {
+      await result.current.refresh();
+    });
+    expect(result.current.grandkids).toEqual(mockGrandkids);
+  });
 });

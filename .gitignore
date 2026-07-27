@@ -47,3 +47,6 @@ next-env.d.ts
 # Claude Code local config + graphify knowledge graph (local-only)
 .claude/
 graphify-out/
+
+# stray commander-mcp sqlite (server uses a relative db_path)
+/data/

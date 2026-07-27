@@ -33,3 +33,21 @@ echo "  - PHP:     tail -f /tmp/grandkid-php-server.log"
 echo "  - Next.js: tail -f /tmp/grandkid-nextjs-server.log"
 echo ""
 echo "Run ./scripts/stop-dev.sh to stop all servers"
+
+if [ "$NO_BROWSER" != "1" ]; then
+  # Once Next answers on :3002 (basePath '' in dev), pop an incognito Chrome
+  # window at the app.
+  ( for _ in $(seq 1 60); do
+      curl -s -o /dev/null --max-time 2 http://localhost:3002/ && { "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --incognito "http://localhost:3002/" >/dev/null 2>&1 & break; }
+      sleep 1
+    done ) &
+fi
+
+if [ "$FOREGROUND" = "1" ]; then
+  # Foreground mode (MissionControl play/stop button): stay attached so stopping
+  # this command tears down the servers it started. kill 0 signals this script's
+  # own process group only, so a Portfolio dev server started in a separate
+  # session by the play-button guard is left running.
+  trap 'kill 0' INT TERM
+  wait
+fi
