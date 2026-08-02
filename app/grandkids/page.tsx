@@ -157,10 +157,10 @@ export default function GrandkidsPage() {
                           Age {kid.age}
                         </Typography>
                       </Box>
-                      <IconButton size="small" onClick={() => openEdit(kid)}>
+                      <IconButton size="small" aria-label={`Edit ${kid.name}`} onClick={() => openEdit(kid)}>
                         <EditIcon fontSize="small" />
                       </IconButton>
-                      <IconButton size="small" onClick={() => handleDelete(kid.id)} color="error">
+                      <IconButton size="small" aria-label={`Delete ${kid.name}`} onClick={() => handleDelete(kid.id)} color="error">
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Box>
@@ -213,7 +213,17 @@ export default function GrandkidsPage() {
               {AVATAR_COLORS.map((color) => (
                 <Box
                   key={color}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Avatar color ${color}`}
+                  aria-pressed={avatarColor === color}
                   onClick={() => setAvatarColor(color)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setAvatarColor(color);
+                    }
+                  }}
                   sx={{
                     width: 32,
                     height: 32,

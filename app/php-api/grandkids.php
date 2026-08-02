@@ -30,6 +30,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         requireAdmin();
         $input = getJSONInput();
         if (empty($input['name'])) sendError('Name is required');
+        if (mb_strlen($input['name']) > 100) sendError('Name must be 100 characters or less');
         if (!isset($input['age']) || $input['age'] < 1) sendError('Valid age is required');
         if (!empty($input['avatar_color']) && !preg_match('/^#[0-9a-fA-F]{6}$/', $input['avatar_color'])) {
             sendError('Invalid avatar_color: must be a 6-digit hex color (e.g. #D2691E)');
@@ -60,7 +61,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
         $fields = [];
         $values = [];
-        if (isset($input['name'])) { $fields[] = 'name = ?'; $values[] = $input['name']; }
+        if (isset($input['name'])) {
+            if (mb_strlen($input['name']) > 100) sendError('Name must be 100 characters or less');
+            $fields[] = 'name = ?';
+            $values[] = $input['name'];
+        }
         if (isset($input['age'])) { $fields[] = 'age = ?'; $values[] = (int) $input['age']; }
         if (isset($input['interests'])) { $fields[] = 'interests = ?'; $values[] = json_encode($input['interests']); }
         if (isset($input['avatar_color'])) {
