@@ -91,6 +91,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $emoji = trim($input['emoji'] ?? '🔍');
         $description = isset($input['description']) ? trim($input['description']) : null;
 
+        if (mb_strlen($title) > 100) sendError('title must be 100 characters or less');
+        if (mb_strlen($emoji) > 10) sendError('emoji must be 10 characters or less');
+        if ($description !== null && mb_strlen($description) > 255) sendError('description must be 255 characters or less');
         if (!in_array($difficulty, ['easy', 'medium', 'hard'], true)) {
             sendError('difficulty must be easy, medium, or hard');
         }
