@@ -66,8 +66,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
             // hard difficulty). Anything outside that is counted in the theme but
             // never appears in a puzzle, so reject it at add time.
             if (str_contains($word, ' ')) sendError('Words cannot contain spaces');
-            if (strlen($word) < 3) sendError('Word must be at least 3 characters');
-            if (strlen($word) > 12) sendError('Word must be 12 characters or fewer (largest grid is 12)');
+            if (mb_strlen($word) < 3) sendError('Word must be at least 3 characters');
+            if (mb_strlen($word) > 12) sendError('Word must be 12 characters or fewer (largest grid is 12)');
 
             $stmt = $db->prepare(
                 'INSERT INTO word_search_words (theme_id, word) VALUES (?, ?)'
