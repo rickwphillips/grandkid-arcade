@@ -246,7 +246,12 @@ function PuzzleImagesSection({ active }: { active: boolean }) {
                       {new Date(image.created_at).toLocaleDateString()}
                     </Typography>
                   </Box>
-                  <IconButton size="small" color="error" onClick={() => setDeleteTarget(image)}>
+                  <IconButton
+                    size="small"
+                    color="error"
+                    aria-label={`Delete image ${image.title}`}
+                    onClick={() => setDeleteTarget(image)}
+                  >
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </CardContent>
@@ -425,7 +430,12 @@ function HangmanWordsSection({ active }: { active: boolean }) {
                     {w.hint && <Typography variant="caption" color="text.secondary">{w.hint}</Typography>}
                   </Box>
                   <Chip label={w.difficulty} size="small" color={DIFFICULTY_COLORS[w.difficulty] || 'default'} />
-                  <IconButton size="small" color="error" onClick={() => setDeleteTarget(w)}>
+                  <IconButton
+                    size="small"
+                    color="error"
+                    aria-label={`Delete word ${w.word}`}
+                    onClick={() => setDeleteTarget(w)}
+                  >
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </CardContent>
@@ -657,7 +667,17 @@ function WordSearchSection({ active }: { active: boolean }) {
               <Card key={theme.id}>
                 <CardContent
                   sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1.5, '&:last-child': { pb: expandedId === theme.id ? 0 : 1.5 }, cursor: 'pointer' }}
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={expandedId === theme.id}
+                  aria-label={`${expandedId === theme.id ? 'Collapse' : 'Expand'} theme ${theme.title}`}
                   onClick={() => handleToggleExpand(theme.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleToggleExpand(theme.id);
+                    }
+                  }}
                 >
                   <Typography sx={{ fontSize: '1.5rem', lineHeight: 1 }}>{theme.emoji}</Typography>
                   <Box sx={{ flexGrow: 1 }}>
@@ -666,7 +686,12 @@ function WordSearchSection({ active }: { active: boolean }) {
                   </Box>
                   <Chip label={theme.difficulty} size="small" color={DIFFICULTY_COLORS[theme.difficulty] || 'default'} />
                   <Chip label={`${theme.word_count} words`} size="small" variant="outlined" />
-                  <IconButton size="small" color="error" onClick={(e) => { e.stopPropagation(); setDeleteTarget(theme); }}>
+                  <IconButton
+                    size="small"
+                    color="error"
+                    aria-label={`Delete theme ${theme.title}`}
+                    onClick={(e) => { e.stopPropagation(); setDeleteTarget(theme); }}
+                  >
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                   {expandedId === theme.id
