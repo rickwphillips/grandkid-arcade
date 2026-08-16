@@ -26,7 +26,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $input = getJSONInput();
 
         if (empty($input['title'])) sendError('Title is required');
-        if (strlen($input['title']) > 255) sendError('Title must be 255 characters or less');
+        if (mb_strlen($input['title']) > 255) sendError('Title must be 255 characters or less');
         if (empty($input['image_data'])) sendError('Image data is required');
         if (!preg_match('/^data:image\/(jpeg|png|gif|webp);base64,/', $input['image_data'])) {
             sendError('Invalid image format: only JPEG, PNG, GIF, and WebP are allowed');

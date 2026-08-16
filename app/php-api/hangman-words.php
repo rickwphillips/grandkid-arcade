@@ -55,6 +55,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $hint = isset($input['hint']) ? trim($input['hint']) : null;
         $difficulty = $input['difficulty'] ?? 'easy';
 
+        if (mb_strlen($word) > 100) sendError('Word must be 100 characters or less');
+        if ($hint !== null && mb_strlen($hint) > 255) sendError('Hint must be 255 characters or less');
         if (!in_array($difficulty, ['easy', 'medium', 'hard'], true)) {
             sendError('difficulty must be easy, medium, or hard');
         }
