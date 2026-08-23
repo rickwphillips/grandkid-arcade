@@ -365,11 +365,13 @@ export default function WhackAMolePage() {
                     touchAction: 'manipulation',
                   }}
                 >
-                  {/* Mole pops up from the hole */}
+                  {/* Mole pops up from the hole. Decorative alt: the hole
+                      button already carries an aria-label saying whether a
+                      mole is up, so a second announcement just repeats it. */}
                   <Box
                     component="img"
                     src={isGolden ? `${ASSET_BASE}/mole-golden.png` : `${ASSET_BASE}/mole.png`}
-                    alt={isGolden ? 'golden mole' : 'mole'}
+                    alt=""
                     className={isGolden && isActive && !wasHit ? styles.goldenMole : undefined}
                     sx={{
                       position: 'absolute',
