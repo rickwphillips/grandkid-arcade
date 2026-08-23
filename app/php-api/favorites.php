@@ -23,8 +23,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $grandkidId = (int) $input['grandkid_id'];
         $gameSlug = $input['game_slug'];
 
-        $validSlugs = ['color-match', 'slide-puzzle', 'connect-4', 'hangman', 'word-search', 'jigsaw-puzzle', 'math-flash-cards', 'simon-says', 'whack-a-mole'];
-        if (!in_array($gameSlug, $validSlugs, true)) {
+        if (!in_array($gameSlug, VALID_GAME_SLUGS, true)) {
             sendError('Invalid game_slug');
         }
 

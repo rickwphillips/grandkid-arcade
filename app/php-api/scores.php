@@ -15,6 +15,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
             $params[] = (int) $_GET['grandkid_id'];
         }
         if (isset($_GET['game_slug'])) {
+            if (!in_array($_GET['game_slug'], VALID_GAME_SLUGS, true)) {
+                sendError('Invalid game_slug', 400);
+            }
             $where[] = 'gp.game_slug = ?';
             $params[] = $_GET['game_slug'];
         }
@@ -39,8 +42,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (empty($input['game_slug'])) sendError('game_slug is required');
         if (!isset($input['score'])) sendError('score is required');
 
-        $knownSlugs = ['color-match', 'slide-puzzle', 'connect-4', 'hangman', 'word-search', 'jigsaw-puzzle', 'math-flash-cards', 'simon-says', 'whack-a-mole'];
-        if (!in_array($input['game_slug'], $knownSlugs, true)) {
+        if (!in_array($input['game_slug'], VALID_GAME_SLUGS, true)) {
             sendError('Invalid game_slug', 400);
         }
 

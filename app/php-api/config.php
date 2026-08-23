@@ -63,6 +63,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+// Canonical list of game slugs. Mirrors app/lib/gameRegistry.ts.
+// Kept in one place so per-endpoint whitelists cannot drift apart.
+const VALID_GAME_SLUGS = [
+    'color-match',
+    'slide-puzzle',
+    'connect-4',
+    'hangman',
+    'word-search',
+    'jigsaw-puzzle',
+    'math-flash-cards',
+    'simon-says',
+    'whack-a-mole',
+];
+
 // Create PDO connection to grandkid database
 function getDB() {
     try {
