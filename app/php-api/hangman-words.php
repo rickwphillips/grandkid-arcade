@@ -56,6 +56,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
         $input = getJSONInput();
         if (empty($input['word'])) sendError('word is required');
+        if (!is_string($input['word'])) sendError('word must be a string');
+        if (isset($input['hint']) && !is_string($input['hint'])) sendError('hint must be a string');
 
         $word = strtoupper(trim($input['word']));
         $hint = isset($input['hint']) ? trim($input['hint']) : null;

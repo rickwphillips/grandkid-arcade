@@ -46,7 +46,7 @@ if ($isLocalDev) {
     $allowedOrigins[] = 'http://localhost:8082';
 }
 
-if (in_array($origin, $allowedOrigins)) {
+if (in_array($origin, $allowedOrigins, true)) {
     header('Access-Control-Allow-Origin: ' . $origin);
 } elseif ($isLocalDev) {
     header('Access-Control-Allow-Origin: *');

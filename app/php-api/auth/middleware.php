@@ -74,7 +74,9 @@ function requireAuth() {
 
 function requireAdmin() {
     $user = requireAuth();
-    if ($user['role'] !== 'admin') {
+    // ?? '' so a token whose payload carries no role is denied quietly, rather
+    // than emitting an "Undefined array key" warning ahead of the JSON body.
+    if (($user['role'] ?? '') !== 'admin') {
         sendError('Admin access required', 403);
     }
     return $user;
