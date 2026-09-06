@@ -24,6 +24,9 @@ export function MuteToggle() {
         onClick={handleToggle}
         color="inherit"
         aria-label="toggle sound"
+        // The label is static and only the icon changes, so without aria-pressed
+        // a screen reader announces the same thing muted or unmuted.
+        aria-pressed={muted}
         sx={{
           position: 'fixed',
           top: 24,

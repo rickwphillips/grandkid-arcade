@@ -14,6 +14,8 @@ export function DarkModeToggle() {
         onClick={toggleTheme}
         color="inherit"
         aria-label="toggle dark mode"
+        // Same as MuteToggle: static label, icon-only state change.
+        aria-pressed={mode === 'dark'}
         sx={{
           position: 'fixed',
           top: 24,
