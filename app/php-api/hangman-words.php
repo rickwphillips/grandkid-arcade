@@ -39,7 +39,13 @@ switch ($_SERVER['REQUEST_METHOD']) {
             sendJSON($row);
         }
 
-        // Otherwise return all words (admin listing)
+        // Otherwise return all words (admin listing). This is the answer key for
+        // the game, so it needs the same admin gate as POST/DELETE below. The only
+        // caller is the AdminGuard-wrapped admin page (api.getHangmanWords);
+        // gameplay uses the ?random=1 branch above, which stays open to any
+        // authenticated user.
+        requireAdmin();
+
         $stmt = $db->prepare('SELECT id, word, hint, difficulty, created_at FROM hangman_words ORDER BY difficulty, word');
         $stmt->execute();
         sendJSON($stmt->fetchAll());

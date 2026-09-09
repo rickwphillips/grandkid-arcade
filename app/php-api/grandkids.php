@@ -30,8 +30,17 @@ switch ($_SERVER['REQUEST_METHOD']) {
         requireAdmin();
         $input = getJSONInput();
         if (empty($input['name'])) sendError('Name is required');
+        // is_string before mb_strlen: PHP 8 throws an uncaught TypeError on array
+        // input, which escapes as a fatal 500 instead of the JSON error envelope
+        // every other guard here returns.
+        if (!is_string($input['name'])) sendError('Name must be a string');
         if (mb_strlen($input['name']) > 100) sendError('Name must be 100 characters or less');
-        if (!isset($input['age']) || $input['age'] < 1) sendError('Valid age is required');
+        // is_numeric first: a bare `$input['age'] < 1` lets non-numeric strings
+        // ("abc"), booleans, and arrays through, and they then cast to 0.
+        if (!isset($input['age']) || !is_numeric($input['age'])) sendError('Valid age is required');
+        if ((int) $input['age'] < 1 || (int) $input['age'] > 120) sendError('Age must be between 1 and 120');
+        if (isset($input['interests']) && !is_array($input['interests'])) sendError('interests must be an array');
+        if (!empty($input['avatar_color']) && !is_string($input['avatar_color'])) sendError('avatar_color must be a string');
         if (!empty($input['avatar_color']) && !preg_match('/^#[0-9a-fA-F]{6}$/', $input['avatar_color'])) {
             sendError('Invalid avatar_color: must be a 6-digit hex color (e.g. #D2691E)');
         }
@@ -62,13 +71,24 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $fields = [];
         $values = [];
         if (isset($input['name'])) {
+            if (!is_string($input['name'])) sendError('Name must be a string');
             if (mb_strlen($input['name']) > 100) sendError('Name must be 100 characters or less');
             $fields[] = 'name = ?';
             $values[] = $input['name'];
         }
-        if (isset($input['age'])) { $fields[] = 'age = ?'; $values[] = (int) $input['age']; }
-        if (isset($input['interests'])) { $fields[] = 'interests = ?'; $values[] = json_encode($input['interests']); }
+        if (isset($input['age'])) {
+            if (!is_numeric($input['age'])) sendError('Valid age is required');
+            if ((int) $input['age'] < 1 || (int) $input['age'] > 120) sendError('Age must be between 1 and 120');
+            $fields[] = 'age = ?';
+            $values[] = (int) $input['age'];
+        }
+        if (isset($input['interests'])) {
+            if (!is_array($input['interests'])) sendError('interests must be an array');
+            $fields[] = 'interests = ?';
+            $values[] = json_encode($input['interests']);
+        }
         if (isset($input['avatar_color'])) {
+            if (!is_string($input['avatar_color'])) sendError('avatar_color must be a string');
             if (!preg_match('/^#[0-9a-fA-F]{6}$/', $input['avatar_color'])) {
                 sendError('Invalid avatar_color: must be a 6-digit hex color (e.g. #D2691E)');
             }
