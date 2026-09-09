@@ -1,0 +1,60 @@
+version: 2
+
+# Dependabot alerts (the security scanner) are enabled in repo settings and are
+# what actually catches CVEs. This file only governs the scheduled *version
+# update* PRs, which exist so the tree doesn't drift so far that a future
+# security bump becomes a major-version migration.
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 4
+    groups:
+      # Order matters: Dependabot puts each dependency in the FIRST group it
+      # matches, so the catch-all has to come last or it swallows everything
+      # and the specific groups below never fire.
+      #
+      # Next + its lint config move in lockstep (eslint-config-next is pinned to
+      # the same version as next); splitting them produces a broken PR.
+      next:
+        patterns:
+          - next
+          - eslint-config-next
+          - '@next/*'
+      react:
+        patterns:
+          - react
+          - react-dom
+          - '@types/react'
+          - '@types/react-dom'
+      mui:
+        patterns:
+          - '@mui/*'
+          - '@emotion/*'
+      # Everything the groups above didn't claim, in one PR. These carry the
+      # security backports and almost never need per-package review.
+      minor-and-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # Majors are migrations, not updates. Surface them by hand when there's
+      # time to read a changelog, not as an auto-PR against a live app.
+      - dependency-name: '*'
+        update-types:
+          - version-update:semver-major
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      actions:
+        patterns:
+          - '*'
