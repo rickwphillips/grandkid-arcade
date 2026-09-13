@@ -36,6 +36,21 @@ if (file_exists($secretsFile)) {
     }
 }
 
+// Game slugs accepted by the score and favorite endpoints. Kept here rather
+// than inline in each endpoint so the two copies cannot drift apart. Mirrors
+// the registry in app/lib/gameRegistry.ts.
+const VALID_GAME_SLUGS = [
+    'color-match',
+    'slide-puzzle',
+    'connect-4',
+    'hangman',
+    'word-search',
+    'jigsaw-puzzle',
+    'math-flash-cards',
+    'simon-says',
+    'whack-a-mole',
+];
+
 // Dynamic CORS - check origin against allowed list
 $allowedOrigins = array_map('trim', explode(',', ALLOWED_ORIGINS));
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
