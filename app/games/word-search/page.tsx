@@ -389,12 +389,17 @@ export default function WordSearchPage() {
                 let onClick: (() => void) | undefined;
                 let label: string = pw.word;
                 let component: 'button' | 'span' = 'span';
+                // Accessible name for the interactive variants. The hard-mode
+                // chip renders as "?????", which gives a screen reader nothing
+                // to announce, so spell out what the button does.
+                let ariaLabel: string | undefined;
 
                 if (isFound) {
                   chipClass += ` ${styles.wordFound}`;
                 } else if (isEasy) {
                   chipClass += ` ${styles.wordItemClickable}`;
                   component = 'button';
+                  ariaLabel = `Highlight the word ${pw.word}`;
                   onClick = () => handleWordListClick(pw.word);
                 } else if (isHard) {
                   if (isRevealed) {
@@ -403,6 +408,7 @@ export default function WordSearchPage() {
                     chipClass += ` ${styles.wordItemHidden}`;
                     label = '?'.repeat(pw.word.length);
                     component = 'button';
+                    ariaLabel = `Reveal hidden word, ${pw.word.length} letters`;
                     onClick = () => handleWordHardReveal(pw.word);
                   }
                 }
@@ -413,6 +419,7 @@ export default function WordSearchPage() {
                     variant="body2"
                     component={component}
                     className={chipClass}
+                    aria-label={ariaLabel}
                     onClick={onClick}
                   >
                     {label}
