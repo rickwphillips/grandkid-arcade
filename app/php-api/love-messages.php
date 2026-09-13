@@ -8,6 +8,11 @@ $db = getDB();
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
         // Return universal messages + any exclusive to this grandkid
+        // is_string guard: ?name[]=x otherwise reaches execute() as an array and
+        // raises a fatal instead of the JSON error envelope.
+        if (isset($_GET['name']) && !is_string($_GET['name'])) {
+            sendError('name must be a string');
+        }
         if (isset($_GET['name']) && $_GET['name'] !== '') {
             $stmt = $db->prepare(
                 'SELECT id, message FROM love_messages WHERE grandkid_name IS NULL OR grandkid_name = ? ORDER BY id'
