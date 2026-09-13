@@ -35,9 +35,12 @@ export default function SettingsPage() {
               Floating &quot;Grampy loves you!&quot; messages during games
             </Typography>
           </Box>
+          {/* The visible "Love Messages" heading is a sibling Typography, not a
+              <label>, so it gives the input no accessible name on its own. */}
           <Switch
             checked={loveMessages}
             onChange={(_, checked) => setLoveMessages(checked)}
+            slotProps={{ input: { 'aria-label': 'Love Messages' } }}
           />
         </Box>
 
@@ -51,6 +54,7 @@ export default function SettingsPage() {
           <Switch
             checked={floatingIcons}
             onChange={(_, checked) => setFloatingIcons(checked)}
+            slotProps={{ input: { 'aria-label': 'Floating Icons' } }}
           />
         </Box>
       </Box>
