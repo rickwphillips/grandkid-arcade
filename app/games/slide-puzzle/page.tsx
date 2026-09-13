@@ -316,6 +316,7 @@ export default function SlidePuzzlePage() {
                     label={GRID_LABELS[size]}
                     variant={gridSize === size ? 'filled' : 'outlined'}
                     color={gridSize === size ? 'primary' : 'default'}
+                    aria-pressed={gridSize === size}
                     onClick={() => setGridSize(size)}
                     sx={{ fontWeight: 600, px: 1 }}
                   />
