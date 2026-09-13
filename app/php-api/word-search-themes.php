@@ -59,6 +59,10 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
             $input = getJSONInput();
             if (empty($input['word'])) sendError('word is required');
+            // is_string before trim(): PHP 8 throws an uncaught TypeError on
+            // array input, which escapes as a fatal 500 instead of the JSON
+            // error envelope every other guard here returns.
+            if (!is_string($input['word'])) sendError('word must be a string');
 
             $word = strtoupper(trim($input['word']));
             // Match the generator's constraints (gameLogic.ts): it only places
@@ -85,6 +89,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
         // Create a new theme
         $input = getJSONInput();
         if (empty($input['title'])) sendError('title is required');
+        // Same TypeError guard as the add-a-word branch above, for each of the
+        // three free-text fields that reach trim()/mb_strlen().
+        if (!is_string($input['title'])) sendError('title must be a string');
+        if (isset($input['emoji']) && !is_string($input['emoji'])) sendError('emoji must be a string');
+        if (isset($input['description']) && !is_string($input['description'])) sendError('description must be a string');
 
         $title = trim($input['title']);
         $difficulty = $input['difficulty'] ?? 'easy';
