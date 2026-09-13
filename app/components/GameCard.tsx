@@ -33,17 +33,21 @@ export function GameCard({ game }: GameCardProps) {
     >
       <CardContent sx={{ flexGrow: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+          {/* The icon is decorative in both branches: the title is rendered
+              right beside it, so labelling the icon too makes a screen reader
+              announce the game name twice per card. */}
           {game.emojiSrc ? (
             <Box
               component="img"
               src={game.emojiSrc}
-              alt={game.title}
+              alt=""
               className="game-emoji"
               sx={{ width: 40, height: 40, objectFit: 'contain', transition: 'transform 0.2s', flexShrink: 0 }}
             />
           ) : (
             <Typography
               className="game-emoji"
+              aria-hidden="true"
               sx={{ fontSize: 36, transition: 'transform 0.2s', lineHeight: 1 }}
             >
               {game.emoji}

@@ -336,6 +336,7 @@ export default function JigsawPuzzlePage() {
                     label={DIFFICULTY_CONFIG[key].label}
                     variant={difficulty === key ? 'filled' : 'outlined'}
                     color={difficulty === key ? 'primary' : 'default'}
+                    aria-pressed={difficulty === key}
                     onClick={() => setDifficulty(key)}
                     sx={{ fontWeight: 600, px: 1 }}
                   />
