@@ -56,6 +56,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
         $input = getJSONInput();
         if (empty($input['word'])) sendError('word is required');
+        // is_string before trim(): PHP 8 throws an uncaught TypeError on array
+        // input, which escapes as a fatal 500 instead of the JSON error
+        // envelope every other guard here returns.
+        if (!is_string($input['word'])) sendError('word must be a string');
+        if (isset($input['hint']) && !is_string($input['hint'])) sendError('hint must be a string');
 
         $word = strtoupper(trim($input['word']));
         $hint = isset($input['hint']) ? trim($input['hint']) : null;
@@ -81,7 +86,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (empty($_GET['id'])) sendError('id is required');
 
         $stmt = $db->prepare('DELETE FROM hangman_words WHERE id = ?');
-        $stmt->execute([(int) $_GET['id']]);
+        $stmt->execute([getIntParam('id')]);
 
         if ($stmt->rowCount() === 0) {
             sendError('Word not found', 404);
