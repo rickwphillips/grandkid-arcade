@@ -12,7 +12,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
         if (isset($_GET['grandkid_id'])) {
             $where[] = 'gp.grandkid_id = ?';
-            $params[] = (int) $_GET['grandkid_id'];
+            $params[] = getIntParam('grandkid_id');
         }
         if (isset($_GET['game_slug'])) {
             // Whitelisted here as well as on POST below. Without it an array

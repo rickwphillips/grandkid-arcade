@@ -13,7 +13,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 'SELECT id, title, difficulty, emoji, description, created_at
                  FROM word_search_themes WHERE id = ?'
             );
-            $stmt->execute([(int) $_GET['id']]);
+            $stmt->execute([getIntParam('id')]);
             $theme = $stmt->fetch();
 
             if (!$theme) {
@@ -24,7 +24,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 'SELECT id, theme_id, word, created_at
                  FROM word_search_words WHERE theme_id = ? ORDER BY word'
             );
-            $stmt->execute([(int) $_GET['id']]);
+            $stmt->execute([getIntParam('id')]);
             $theme['words'] = $stmt->fetchAll();
             $theme['word_count'] = count($theme['words']);
 
@@ -49,7 +49,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
         if (isset($_GET['id']) && isset($_GET['words'])) {
             // Add a word to an existing theme
-            $themeId = (int) $_GET['id'];
+            $themeId = getIntParam('id');
 
             $stmt = $db->prepare('SELECT id FROM word_search_themes WHERE id = ?');
             $stmt->execute([$themeId]);
@@ -129,7 +129,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (isset($_GET['word_id'])) {
             // Delete a single word
             $stmt = $db->prepare('DELETE FROM word_search_words WHERE id = ?');
-            $stmt->execute([(int) $_GET['word_id']]);
+            $stmt->execute([getIntParam('word_id')]);
 
             if ($stmt->rowCount() === 0) {
                 sendError('Word not found', 404);
@@ -141,7 +141,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
         // Delete theme (cascades to words)
         $stmt = $db->prepare('DELETE FROM word_search_themes WHERE id = ?');
-        $stmt->execute([(int) $_GET['id']]);
+        $stmt->execute([getIntParam('id')]);
 
         if ($stmt->rowCount() === 0) {
             sendError('Theme not found', 404);
