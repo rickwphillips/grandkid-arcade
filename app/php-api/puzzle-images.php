@@ -10,7 +10,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (isset($_GET['id'])) {
             // Get single image with full data
             $stmt = $db->prepare('SELECT id, title, image_data, created_at FROM puzzle_images WHERE id = ?');
-            $stmt->execute([(int) $_GET['id']]);
+            $stmt->execute([getIntParam('id')]);
             $image = $stmt->fetch();
             if (!$image) sendError('Image not found', 404);
             sendJSON($image);
@@ -52,11 +52,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (!isset($_GET['id'])) sendError('ID is required');
 
         $stmt = $db->prepare('SELECT id FROM puzzle_images WHERE id = ?');
-        $stmt->execute([(int) $_GET['id']]);
+        $stmt->execute([getIntParam('id')]);
         if (!$stmt->fetch()) sendError('Image not found', 404);
 
         $stmt = $db->prepare('DELETE FROM puzzle_images WHERE id = ?');
-        $stmt->execute([(int) $_GET['id']]);
+        $stmt->execute([getIntParam('id')]);
         sendJSON(['success' => true]);
         break;
 

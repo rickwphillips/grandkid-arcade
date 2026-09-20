@@ -118,3 +118,20 @@ function sendError($message, $status = 400) {
     echo json_encode(['error' => $message]);
     exit();
 }
+
+// Helper to read an integer id out of the query string.
+//
+// A bare (int) cast is not a validation step. (int) on an array yields 1 with no
+// diagnostic and (int) on a non-numeric string yields 0, so a malformed request
+// silently addresses a real row instead of being rejected: ?id[]=x reaches
+// exactly the same code path as ?id=1. $_GET values are always strings or
+// arrays, so requiring a digit string rejects the array case and the
+// "1.9"/"abc" cases together, and returns the same 400 JSON envelope the rest
+// of the guards in these endpoints use.
+function getIntParam($key) {
+    $value = $_GET[$key] ?? null;
+    if (!is_string($value) || !preg_match('/^-?\d+$/', $value)) {
+        sendError("Invalid $key", 400);
+    }
+    return (int) $value;
+}

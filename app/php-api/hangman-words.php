@@ -86,7 +86,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (empty($_GET['id'])) sendError('id is required');
 
         $stmt = $db->prepare('DELETE FROM hangman_words WHERE id = ?');
-        $stmt->execute([(int) $_GET['id']]);
+        $stmt->execute([getIntParam('id')]);
 
         if ($stmt->rowCount() === 0) {
             sendError('Word not found', 404);
