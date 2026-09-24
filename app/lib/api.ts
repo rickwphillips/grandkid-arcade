@@ -14,6 +14,7 @@ import type {
   WordSearchThemeWithWords,
   WordSearchWord,
 } from './types';
+import { clearToken, getToken, redirectToLogin } from './auth';
 
 // API base URL — environment-aware
 // Dev: proxied via Next.js rewrites to localhost:8082
@@ -25,25 +26,15 @@ export const API_BASE = isDev ? '/php-api/' : '/grandkid-api/';
 // Must be prepended manually for any public/ assets referenced in code
 export const ASSET_BASE = isDev ? '' : '/app/projects/grandkid-games';
 
-// Auth token key (shared with portfolio login page)
-const AUTH_TOKEN_KEY = 'auth_token';
-
-// Login page URL (lives in the portfolio site)
-const LOGIN_URL = isDev
-  ? 'http://localhost:3000/app/login/'
-  : '/app/login/';
-
 function getAuthHeaders(): Record<string, string> {
-  if (typeof window === 'undefined') return {};
-  const token = localStorage.getItem(AUTH_TOKEN_KEY);
+  const token = getToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-function redirectToLogin() {
+function signOutToLogin() {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem(AUTH_TOKEN_KEY);
-  const currentUrl = window.location.href;
-  window.location.href = `${LOGIN_URL}?redirect=${encodeURIComponent(currentUrl)}`;
+  clearToken();
+  redirectToLogin();
 }
 
 // Helper for API calls
@@ -73,7 +64,7 @@ export async function apiFetch<T>(
   });
 
   if (res.status === 401) {
-    redirectToLogin();
+    signOutToLogin();
     throw new Error('Authentication required');
   }
 

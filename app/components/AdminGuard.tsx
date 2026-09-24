@@ -1,21 +1,12 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, ReactNode } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
+import { clearToken, consumeUrlToken, getValidToken, redirectToLogin, userFromToken, type AuthUser } from '../lib/auth';
+import { useAuthUser } from '../lib/useAuthUser';
 
-const AUTH_TOKEN_KEY = 'auth_token';
 const isDev = process.env.NODE_ENV === 'development';
-const LOGIN_URL = isDev
-  ? 'http://localhost:3000/app/login/'
-  : '/app/login/';
 const HOME_URL = isDev ? '/' : '/app/projects/grandkid-games/';
-
-interface AuthUser {
-  id: string;
-  username: string;
-  display_name: string;
-  role: 'admin' | 'user';
-}
 
 interface AdminContextType {
   user: AuthUser | null;
@@ -29,79 +20,29 @@ const AdminContext = createContext<AdminContextType>({
 
 export const useAdmin = () => useContext(AdminContext);
 
-function isTokenExpired(token: string): boolean {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.exp < Date.now() / 1000;
-  } catch {
-    return true;
-  }
-}
-
-function getUserFromToken(token: string): AuthUser | null {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return {
-      id: payload.sub,
-      username: payload.username,
-      display_name: payload.display_name,
-      role: payload.role,
-    };
-  } catch {
-    return null;
-  }
-}
-
+/** Renders its children only for a signed-in admin; see {@link AuthGuard}. */
 export function AdminGuard({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [checking, setChecking] = useState(true);
+  const { user, known } = useAuthUser();
 
   const logout = () => {
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    const currentPath = window.location.href;
-    window.location.href = `${LOGIN_URL}?logout=1&redirect=${encodeURIComponent(currentPath)}`;
+    clearToken();
+    redirectToLogin({ logout: true });
   };
 
   useEffect(() => {
-    // Check for token passed via URL param (needed for cross-origin dev flow)
-    const params = new URLSearchParams(window.location.search);
-    const urlToken = params.get('token');
-    if (urlToken) {
-      localStorage.setItem(AUTH_TOKEN_KEY, urlToken);
-      params.delete('token');
-      const cleanUrl = params.toString()
-        ? `${window.location.pathname}?${params}`
-        : window.location.pathname;
-      window.history.replaceState({}, '', cleanUrl);
-    }
-
-    const token = urlToken || localStorage.getItem(AUTH_TOKEN_KEY);
-
-    if (!token || isTokenExpired(token)) {
-      const currentPath = window.location.href;
-      window.location.href = `${LOGIN_URL}?redirect=${encodeURIComponent(currentPath)}`;
-      return;
-    }
-
-    const tokenUser = getUserFromToken(token);
-    if (!tokenUser) {
-      logout();
-      return;
-    }
-
-    // Admin role check — redirect non-admins to home
-    if (tokenUser.role !== 'admin') {
-      window.location.href = HOME_URL;
-      return;
-    }
-
-    // Auth result comes from URL/localStorage/history side effects above, which must run in an effect.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setUser(tokenUser);
-    setChecking(false);
+    consumeUrlToken();
   }, []);
 
-  if (checking) {
+  // Redirect once the token can be read: signed out to login, non-admins home.
+  // Reads the store directly for the same reason as AuthGuard.
+  useEffect(() => {
+    if (!known) return;
+    const current = userFromToken(getValidToken());
+    if (!current) redirectToLogin();
+    else if (current.role !== 'admin') window.location.href = HOME_URL;
+  }, [known, user]);
+
+  if (user?.role !== 'admin') {
     return (
       <Box
         sx={{
