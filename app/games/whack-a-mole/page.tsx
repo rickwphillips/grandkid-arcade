@@ -12,6 +12,7 @@ import { useGrandkid } from '@/app/lib/useGrandkid';
 import { api, ASSET_BASE } from '@/app/lib/api';
 import { playWhack, playGoldenWhack, playEnd } from './sounds';
 import styles from './page.module.scss';
+import Image from 'next/image';
 
 type Difficulty = 'easy' | 'medium' | 'hard';
 type Phase = 'select' | 'playing' | 'done';
@@ -289,8 +290,15 @@ export default function WhackAMolePage() {
         ref={malletWrapperRef}
         style={{ position: 'fixed', pointerEvents: 'none', zIndex: 9999, display: 'none' }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img ref={malletImgRef} src={`${ASSET_BASE}/cursors/mallet.png`} alt="" className={styles.malletCursor} />
+        <Image
+          ref={malletImgRef}
+          src={`${ASSET_BASE}/cursors/mallet.png`}
+          alt=""
+          width={96}
+          height={52}
+          loading="eager"
+          className={styles.malletCursor}
+        />
       </div>
 
       <Box sx={{ position: 'relative' }}>

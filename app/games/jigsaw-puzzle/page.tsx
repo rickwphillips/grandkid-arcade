@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useEffectEvent, useRef, useCallback } from 'react';
+import NextImage from 'next/image';
+import type { Canvas, Piece } from 'headbreaker';
 import {
   Box,
   Typography,
@@ -60,8 +62,12 @@ export default function JigsawPuzzlePage() {
   const [showWinBadge, setShowWinBadge] = useState(false);
   const scoreSubmittedRef = useRef(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const hbCanvasRef = useRef<any>(null);
+  const hbCanvasRef = useRef<Canvas | null>(null);
+
+  // Piece outline colour for the current theme, read when the puzzle is built.
+  // An effect event, so toggling dark mode does not rebuild (and reshuffle)
+  // the puzzle mid-game; the game-area background re-themes via a CSS class.
+  const pieceStrokeColor = useEffectEvent(() => (mode === 'dark' ? '#aaa' : '#555'));
 
   // Default difficulty follows the selected grandkid's age (adjusted during
   // render when the selection changes, rather than in an effect)
@@ -104,8 +110,9 @@ export default function JigsawPuzzlePage() {
       const mod = await import('headbreaker');
       if (cancelled) return;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const hb = (mod as any).default ?? mod;
+      // The package is CommonJS; depending on the bundler the API arrives as
+      // the default export or as the module namespace itself.
+      const hb = mod.default ?? mod;
       const { rows, cols, pieceSize, proximity } = DIFFICULTY_CONFIG[difficulty];
       const pieceRadius = Math.round(pieceSize / 2);
 
@@ -126,7 +133,7 @@ export default function JigsawPuzzlePage() {
         pieceSize,
         proximity,
         borderFill: 2,
-        strokeColor: mode === 'dark' ? '#aaa' : '#555',
+        strokeColor: pieceStrokeColor(),
         lineSoftness: 0.18,
         image: scaledImg,
         painter: new hb.painters.Konva(),
@@ -142,21 +149,18 @@ export default function JigsawPuzzlePage() {
       // We use headbreaker's piece.translate() so its internal position model
       // stays in sync — direct Konva node.x() writes leave headbreaker's model
       // stale and break subsequent snap detection.
-      const konvaLayer = canvas['__konvaLayer__'];
+      const konvaLayer = canvas.__konvaLayer__;
       const stage = konvaLayer?.getStage?.();
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const hbPieces: any[] = (canvas as any).puzzle?.pieces ?? [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const nodeToHbPiece = new Map<any, any>();
+      const hbPieces = canvas.puzzle?.pieces ?? [];
+      const nodeToHbPiece = new Map<NonNullable<Piece['shape']>, Piece>();
       hbPieces.forEach((piece) => {
         if (piece.shape) nodeToHbPiece.set(piece.shape, piece);
       });
 
-      if (stage) {
+      if (konvaLayer && stage) {
         stage.on('dragend', () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const nodes: any[] = konvaLayer.find((n: any) => n.draggable?.());
+          const nodes = konvaLayer.find((n: NonNullable<Piece['shape']>) => n.draggable()).toArray();
           if (!nodes.length) return;
 
           // Cluster connected pieces by proximity (connected pieces sit exactly
@@ -238,18 +242,13 @@ export default function JigsawPuzzlePage() {
       cancelled = true;
       if (hbCanvasRef.current) {
         try {
-          hbCanvasRef.current['__konvaLayer__']?.getStage()?.destroy();
+          hbCanvasRef.current.__konvaLayer__?.getStage()?.destroy();
         } catch {
           // ignore
         }
         hbCanvasRef.current = null;
       }
     };
-    // `mode` is intentionally NOT a dep: it only sets a cosmetic piece stroke
-    // color at build time. Including it rebuilt and reshuffled the whole puzzle
-    // on a dark-mode toggle, wiping the player's progress. The game-area
-    // background still re-themes via a CSS class outside this effect.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, imageDataUri, difficulty]);
 
   useEffect(() => {
@@ -388,10 +387,12 @@ export default function JigsawPuzzlePage() {
             }}
           >
             {phase === 'win' ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <NextImage
                 src={imageDataUri}
                 alt="Completed puzzle"
+                width={CANVAS_SIZE}
+                height={CANVAS_SIZE}
+                loading="eager"
                 className={styles.puzzleContainer}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />

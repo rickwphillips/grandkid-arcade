@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   ...(isDev ? {} : { output: 'export' }),
   basePath: isDev ? '' : '/app/projects/grandkid-games',
   trailingSlash: true,
+  // Static export has no image optimizer; next/image serves files as-is.
+  images: { unoptimized: true },
 
   // Proxy PHP API requests in development
   async rewrites() {
