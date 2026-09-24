@@ -50,6 +50,17 @@ export function FloatingLoveMessages({ name, active }: FloatingLoveMessagesProps
   const decoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastIndexRef = useRef(-1);
 
+  // Clear on-screen messages/decorations when deactivated or disabled. Adjusted
+  // during render when the inputs change, rather than in the effects below.
+  const [prevActive, setPrevActive] = useState(active);
+  const [prevIconsEnabled, setPrevIconsEnabled] = useState(floatingIconsEnabled);
+  if (active !== prevActive || floatingIconsEnabled !== prevIconsEnabled) {
+    setPrevActive(active);
+    setPrevIconsEnabled(floatingIconsEnabled);
+    if (!active && active !== prevActive) setActiveMessages([]);
+    if (!active || !floatingIconsEnabled) setDecos([]);
+  }
+
   // Fetch messages (universal + exclusive to this grandkid)
   useEffect(() => {
     let cancelled = false;
@@ -115,7 +126,6 @@ export function FloatingLoveMessages({ name, active }: FloatingLoveMessagesProps
   useEffect(() => {
     if (!active || !floatingIconsEnabled) {
       if (decoTimerRef.current) clearTimeout(decoTimerRef.current);
-      setDecos([]);
       return;
     }
 
@@ -150,11 +160,6 @@ export function FloatingLoveMessages({ name, active }: FloatingLoveMessagesProps
       if (decoTimerRef.current) clearTimeout(decoTimerRef.current);
     };
   }, [active, floatingIconsEnabled]);
-
-  // Clear active messages when deactivated
-  useEffect(() => {
-    if (!active) setActiveMessages([]);
-  }, [active]);
 
   if (activeMessages.length === 0 && decos.length === 0) return null;
 

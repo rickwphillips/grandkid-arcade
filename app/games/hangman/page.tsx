@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Box, Typography, Button, Alert } from '@mui/material';
 import ReplayIcon from '@mui/icons-material/Replay';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -48,7 +48,7 @@ export default function HangmanPage() {
   const [phase, setPhase] = useState<Phase>('select');
   const [currentWord, setCurrentWord] = useState<HangmanWord | null>(null);
   const [guessed, setGuessed] = useState<Set<string>>(new Set());
-  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const scoreSubmittedRef = useRef(false);
   const [showWinBadge, setShowWinBadge] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -58,11 +58,6 @@ export default function HangmanPage() {
   const wrongCount = currentWord ? getWrongCount(currentWord.word, guessed) : 0;
   const useMasonTheme = selected?.name === 'Mason';
 
-  // Show win badge on win/lose
-  useEffect(() => {
-    if (phase === 'win' || phase === 'lose') setShowWinBadge(true);
-  }, [phase]);
-
   const fetchWord = useCallback(async (difficulty: string) => {
     setLoading(true);
     setError('');
@@ -70,7 +65,7 @@ export default function HangmanPage() {
       const word = await api.getRandomWord(difficulty);
       setCurrentWord(word);
       setGuessed(new Set());
-      setScoreSubmitted(false);
+      scoreSubmittedRef.current = false;
       setShowWinBadge(false);
       setJustPopped(null);
       setPhase('play');
@@ -107,11 +102,13 @@ export default function HangmanPage() {
         setTimeout(() => {
           playWin();
           setPhase('win');
+          setShowWinBadge(true);
         }, 300);
       } else if (isLost(getWrongCount(currentWord.word, newGuessed))) {
         setTimeout(() => {
           playLose();
           setPhase('lose');
+          setShowWinBadge(true);
         }, 500);
       }
     },
@@ -131,8 +128,8 @@ export default function HangmanPage() {
 
   // Submit score on win
   useEffect(() => {
-    if (phase !== 'win' || scoreSubmitted || !selected || !currentWord) return;
-    setScoreSubmitted(true);
+    if (phase !== 'win' || scoreSubmittedRef.current || !selected || !currentWord) return;
+    scoreSubmittedRef.current = true;
     const wordLetterCount = currentWord.word.replace(/[^A-Z]/gi, '').length;
     api
       .submitScore({
@@ -144,7 +141,10 @@ export default function HangmanPage() {
       .catch(() => {
         // Non-critical
       });
-  }, [phase, scoreSubmitted, selected, currentWord, wrongCount]);
+  }, [phase, selected, currentWord, wrongCount]);
+
+  // Submission is guarded by a ref; the saved-score message mirrors that guard.
+  const scoreSubmitted = phase === 'win' && !!selected && !!currentWord;
 
   const playAgain = useCallback(() => {
     if (currentWord) fetchWord(currentWord.difficulty);
@@ -154,7 +154,7 @@ export default function HangmanPage() {
     setPhase('select');
     setCurrentWord(null);
     setGuessed(new Set());
-    setScoreSubmitted(false);
+    scoreSubmittedRef.current = false;
     setShowWinBadge(false);
     setJustPopped(null);
   }, []);

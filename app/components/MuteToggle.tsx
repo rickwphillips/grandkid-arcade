@@ -1,17 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { IconButton, Tooltip } from '@mui/material';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import { isMuted, toggleMuted } from '@/app/lib/mute';
 
 export function MuteToggle() {
-  const [muted, setMuted] = useState(false);
-
-  useEffect(() => {
-    setMuted(isMuted());
-  }, []);
+  // Safe to read localStorage in the initializer: ThemeProvider renders no
+  // children until after mount, so this never runs during SSR/hydration.
+  const [muted, setMuted] = useState(isMuted);
 
   const handleToggle = () => {
     const next = toggleMuted();

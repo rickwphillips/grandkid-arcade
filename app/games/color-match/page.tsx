@@ -79,7 +79,7 @@ export default function PictureMatcherPage() {
   const [flipped, setFlipped] = useState<number[]>([]);
   const [matched, setMatched] = useState<Set<string>>(new Set());
   const [moves, setMoves] = useState(0);
-  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const scoreSubmittedRef = useRef(false);
   const [locked, setLocked] = useState(false);
   const [showWinBadge, setShowWinBadge] = useState(false);
 
@@ -114,25 +114,15 @@ export default function PictureMatcherPage() {
     setFlipped([]);
     setMatched(new Set());
     setMoves(0);
-    setScoreSubmitted(false);
+    scoreSubmittedRef.current = false;
     setLocked(false);
     setPhase('play');
   }, []);
 
-  // Check win condition
-  useEffect(() => {
-    if (phase !== 'play') return;
-    if (matched.size === config.pairs && moves > 0) {
-      setPhase('done');
-      setShowWinBadge(true);
-      playWin();
-    }
-  }, [matched, moves, config.pairs, phase]);
-
   // Submit score on win
   useEffect(() => {
-    if (phase !== 'done' || scoreSubmitted || !selected) return;
-    setScoreSubmitted(true);
+    if (phase !== 'done' || scoreSubmittedRef.current || !selected) return;
+    scoreSubmittedRef.current = true;
     api
       .submitScore({
         grandkid_id: selected.id,
@@ -143,7 +133,10 @@ export default function PictureMatcherPage() {
       .catch(() => {
         // Non-critical
       });
-  }, [phase, scoreSubmitted, selected, moves, config.pairs]);
+  }, [phase, selected, moves, config.pairs]);
+
+  // Submission is guarded by a ref; the saved-score message mirrors that guard.
+  const scoreSubmitted = phase === 'done' && !!selected;
 
   const handleFlip = useCallback(
     (index: number) => {
@@ -163,6 +156,12 @@ export default function PictureMatcherPage() {
           playMatch();
           setMatched((prev) => new Set(prev).add(cards[a].matchKey));
           setFlipped([]);
+          // Win condition: this match completes the last pair
+          if (matched.size + 1 === config.pairs) {
+            setPhase('done');
+            setShowWinBadge(true);
+            playWin();
+          }
         } else {
           playMismatch();
           setLocked(true);
@@ -175,7 +174,7 @@ export default function PictureMatcherPage() {
         setFlipped(next);
       }
     },
-    [flipped, locked, matched, cards, phase],
+    [flipped, locked, matched, cards, phase, config.pairs],
   );
 
   const playAgain = useCallback(() => {
@@ -183,7 +182,7 @@ export default function PictureMatcherPage() {
     setFlipped([]);
     setMatched(new Set());
     setMoves(0);
-    setScoreSubmitted(false);
+    scoreSubmittedRef.current = false;
     setLocked(false);
     setShowWinBadge(false);
     setPhase('play');
@@ -195,7 +194,7 @@ export default function PictureMatcherPage() {
     setFlipped([]);
     setMatched(new Set());
     setMoves(0);
-    setScoreSubmitted(false);
+    scoreSubmittedRef.current = false;
     setLocked(false);
     setShowWinBadge(false);
   }, []);

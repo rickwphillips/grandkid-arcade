@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Box, Typography, Button, Chip } from '@mui/material';
 import ReplayIcon from '@mui/icons-material/Replay';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -45,7 +45,7 @@ export default function SimonSaysPage() {
   const [score, setScore] = useState(0);
   const [activeButton, setActiveButton] = useState<number | null>(null);
   const [showWinBadge, setShowWinBadge] = useState(false);
-  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const scoreSubmittedRef = useRef(false);
 
   const startGame = useCallback((diff: Difficulty) => {
     const first = Math.floor(Math.random() * 4);
@@ -56,7 +56,7 @@ export default function SimonSaysPage() {
     setScore(0);
     setActiveButton(null);
     setShowWinBadge(false);
-    setScoreSubmitted(false);
+    scoreSubmittedRef.current = false;
     setPhase('showing');
   }, []);
 
@@ -129,8 +129,8 @@ export default function SimonSaysPage() {
 
   // Submit score on game over
   useEffect(() => {
-    if (phase !== 'done' || scoreSubmitted || !selected) return;
-    setScoreSubmitted(true);
+    if (phase !== 'done' || scoreSubmittedRef.current || !selected) return;
+    scoreSubmittedRef.current = true;
     api
       .submitScore({
         grandkid_id: selected.id,
@@ -139,7 +139,10 @@ export default function SimonSaysPage() {
         completed: true,
       })
       .catch(() => {});
-  }, [phase, scoreSubmitted, selected, score]);
+  }, [phase, selected, score]);
+
+  // Submission is guarded by a ref; the saved-score message mirrors that guard.
+  const scoreSubmitted = phase === 'done' && !!selected;
 
   const playAgain = useCallback(() => startGame(difficulty), [difficulty, startGame]);
 

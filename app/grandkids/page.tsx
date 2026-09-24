@@ -45,16 +45,17 @@ export default function GrandkidsPage() {
   const [avatarColor, setAvatarColor] = useState(AVATAR_COLORS[0]);
   const [saving, setSaving] = useState(false);
 
-  const loadGrandkids = useCallback(async () => {
-    try {
-      const list = await api.getGrandkids();
-      setGrandkids(list);
-    } catch {
-      // handled by auth redirect
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const loadGrandkids = useCallback(
+    () =>
+      api
+        .getGrandkids()
+        .then((list) => setGrandkids(list))
+        .catch(() => {
+          // handled by auth redirect
+        })
+        .finally(() => setLoading(false)),
+    [],
+  );
 
   useEffect(() => { loadGrandkids(); }, [loadGrandkids]);
 

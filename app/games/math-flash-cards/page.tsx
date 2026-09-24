@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Box, Typography, Button, LinearProgress } from '@mui/material';
 import ReplayIcon from '@mui/icons-material/Replay';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -103,7 +103,7 @@ export default function MathFlashCardsPage() {
   const [answerState, setAnswerState] = useState<AnswerState>('idle');
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
   const [showWinBadge, setShowWinBadge] = useState(false);
-  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const scoreSubmittedRef = useRef(false);
 
   const startGame = useCallback((diff: Difficulty) => {
     setDifficulty(diff);
@@ -114,7 +114,7 @@ export default function MathFlashCardsPage() {
     setAnswerState('idle');
     setSelectedChoice(null);
     setShowWinBadge(false);
-    setScoreSubmitted(false);
+    scoreSubmittedRef.current = false;
     setPhase('play');
   }, []);
 
@@ -146,8 +146,8 @@ export default function MathFlashCardsPage() {
 
   // Submit score on completion
   useEffect(() => {
-    if (phase !== 'done' || scoreSubmitted || !selected) return;
-    setScoreSubmitted(true);
+    if (phase !== 'done' || scoreSubmittedRef.current || !selected) return;
+    scoreSubmittedRef.current = true;
     api
       .submitScore({
         grandkid_id: selected.id,
@@ -156,7 +156,10 @@ export default function MathFlashCardsPage() {
         completed: true,
       })
       .catch(() => {});
-  }, [phase, scoreSubmitted, selected, score]);
+  }, [phase, selected, score]);
+
+  // Submission is guarded by a ref; the saved-score message mirrors that guard.
+  const scoreSubmitted = phase === 'done' && !!selected;
 
   const playAgain = useCallback(() => startGame(difficulty), [difficulty, startGame]);
 

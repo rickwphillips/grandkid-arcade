@@ -19,6 +19,7 @@ type MoleType = 'normal' | 'golden';
 
 const HOLES = 9;
 const ROUND_SECONDS = 30;
+const NO_MOLES: ReadonlyMap<number, MoleType> = new Map();
 const GOLDEN_CHANCE = 0.15; // ~1-in-7 chance a spawned mole is golden
 
 const SETTINGS: Record<Difficulty, { spawnMs: number; lifeMs: number; maxMoles: number; pts: number }> = {
@@ -38,7 +39,7 @@ export default function WhackAMolePage() {
   const [hits, setHits] = useState(0);
   const [timeLeft, setTimeLeft] = useState(ROUND_SECONDS);
   const [showWinBadge, setShowWinBadge] = useState(false);
-  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const scoreSubmittedRef = useRef(false);
 
   // Keyed by hole so a mole's auto-removal timer can be cancelled when it's
   // whacked; otherwise a stale timer fires later and deletes a freshly-spawned
@@ -93,29 +94,30 @@ export default function WhackAMolePage() {
     setHits(0);
     setTimeLeft(ROUND_SECONDS);
     setShowWinBadge(false);
-    setScoreSubmitted(false);
+    scoreSubmittedRef.current = false;
     setPhase('playing');
   }, [clearRemovalTimers]);
 
-  // Countdown timer — the updater stays pure (just decrements). Ending the game
-  // is a side effect, so it lives in its own effect below; doing it inside the
-  // setTimeLeft updater fired playEnd()/setPhase twice under React StrictMode.
+  // Countdown timer. Every round starts at ROUND_SECONDS (startGame resets it),
+  // so the interval tracks the remaining time locally and ends the game from the
+  // tick itself. Side effects stay in the interval body, never in a setState
+  // updater — doing them inside the setTimeLeft updater fired playEnd()/setPhase
+  // twice under React StrictMode.
   useEffect(() => {
     if (phase !== 'playing') return;
+    let remaining = ROUND_SECONDS;
     const interval = setInterval(() => {
-      setTimeLeft((t) => Math.max(0, t - 1));
+      remaining = Math.max(0, remaining - 1);
+      setTimeLeft(remaining);
+      if (remaining <= 0) {
+        clearInterval(interval);
+        setPhase('done');
+        setShowWinBadge(true);
+        playEnd();
+      }
     }, 1000);
     return () => clearInterval(interval);
   }, [phase]);
-
-  // End the game when the clock runs out. The phase guard makes this fire once.
-  useEffect(() => {
-    if (phase === 'playing' && timeLeft <= 0) {
-      setPhase('done');
-      setShowWinBadge(true);
-      playEnd();
-    }
-  }, [phase, timeLeft, playEnd]);
 
   // Mole spawner
   useEffect(() => {
@@ -153,13 +155,14 @@ export default function WhackAMolePage() {
     return () => clearInterval(interval);
   }, [phase, difficulty]);
 
-  // Clean up on game end
+  // Clean up on game end. Moles are hidden once the round is over (see
+  // visibleMoles) and the map itself is reset by startGame/newDifficulty.
   useEffect(() => {
     if (phase === 'done') {
       clearRemovalTimers();
-      setActiveMoles(new Map());
     }
   }, [phase, clearRemovalTimers]);
+  const visibleMoles = phase === 'done' ? NO_MOLES : activeMoles;
 
   const handleWhack = useCallback(
     (hole: number) => {
@@ -202,8 +205,8 @@ export default function WhackAMolePage() {
 
   // Submit score on done
   useEffect(() => {
-    if (phase !== 'done' || scoreSubmitted || !selected) return;
-    setScoreSubmitted(true);
+    if (phase !== 'done' || scoreSubmittedRef.current || !selected) return;
+    scoreSubmittedRef.current = true;
     api
       .submitScore({
         grandkid_id: selected.id,
@@ -212,7 +215,10 @@ export default function WhackAMolePage() {
         completed: true,
       })
       .catch(() => {});
-  }, [phase, scoreSubmitted, selected, score]);
+  }, [phase, selected, score]);
+
+  // Submission is guarded by a ref; the saved-score message mirrors that guard.
+  const scoreSubmitted = phase === 'done' && !!selected;
 
   const playAgain = useCallback(() => startGame(difficulty), [difficulty, startGame]);
 
@@ -335,8 +341,8 @@ export default function WhackAMolePage() {
             onPointerDown={phase === 'playing' ? triggerMalletStrike : undefined}
           >
             {Array.from({ length: HOLES }, (_, hole) => {
-              const isActive = activeMoles.has(hole);
-              const isGolden = activeMoles.get(hole) === 'golden';
+              const isActive = visibleMoles.has(hole);
+              const isGolden = visibleMoles.get(hole) === 'golden';
               const wasHit = justHit.has(hole);
               return (
                 <Box

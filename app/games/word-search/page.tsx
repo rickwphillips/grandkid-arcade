@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -54,7 +54,7 @@ export default function WordSearchPage() {
   const [selStart, setSelStart] = useState<[number, number] | null>(null);
   const [errorCells, setErrorCells] = useState<Set<string>>(new Set());
   const [score, setScore] = useState(0);
-  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const scoreSubmittedRef = useRef(false);
   const [showWinBadge, setShowWinBadge] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -92,7 +92,7 @@ export default function WordSearchPage() {
       setSelStart(null);
       setErrorCells(new Set());
       setScore(0);
-      setScoreSubmitted(false);
+      scoreSubmittedRef.current = false;
       setShowWinBadge(false);
       setPhase('play');
     } catch (err) {
@@ -213,8 +213,8 @@ export default function WordSearchPage() {
 
   // Submit score when done
   useEffect(() => {
-    if (phase !== 'done' || scoreSubmitted || !selected || !grid) return;
-    setScoreSubmitted(true);
+    if (phase !== 'done' || scoreSubmittedRef.current || !selected || !grid) return;
+    scoreSubmittedRef.current = true;
     api
       .submitScore({
         grandkid_id: selected.id,
@@ -225,7 +225,10 @@ export default function WordSearchPage() {
       .catch(() => {
         // Non-critical
       });
-  }, [phase, scoreSubmitted, selected, grid, score]);
+  }, [phase, selected, grid, score]);
+
+  // Submission is guarded by a ref; the saved-score message mirrors that guard.
+  const scoreSubmitted = phase === 'done' && !!selected && !!grid;
 
   const playAgain = useCallback(() => {
     if (currentTheme) handleSelectTheme(currentTheme.id);

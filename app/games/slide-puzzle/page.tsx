@@ -86,17 +86,20 @@ export default function SlidePuzzlePage() {
   const solveCancelledRef = useRef(false);
 
   // Phase 3: Win state
-  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const scoreSubmittedRef = useRef(false);
 
   const emptyValue = gridSize * gridSize - 1;
   const tilePct = 100 / gridSize;
 
-  // Set default grid size based on grandkid age
-  useEffect(() => {
+  // Set default grid size based on grandkid age (adjusted during render when
+  // the selected grandkid changes, rather than in an effect)
+  const [prevSelected, setPrevSelected] = useState<typeof selected>(null);
+  if (selected !== prevSelected) {
+    setPrevSelected(selected);
     if (selected) {
       setGridSize(defaultGridForAge(selected.age));
     }
-  }, [selected]);
+  }
 
   // Fetch image list
   useEffect(() => {
@@ -120,11 +123,6 @@ export default function SlidePuzzlePage() {
     };
   }, []);
 
-  // Show win badge when entering win phase
-  useEffect(() => {
-    if (phase === 'win') setShowWinBadge(true);
-  }, [phase]);
-
   // Clean up solve animation on unmount
   useEffect(() => {
     return () => {
@@ -141,7 +139,7 @@ export default function SlidePuzzlePage() {
       setImageDataUri(img.image_data);
       setBoard(generateBoard(gridSize));
       setMoves(0);
-      setScoreSubmitted(false);
+      scoreSubmittedRef.current = false;
       setShowHint(false);
       setPhase('play');
     } catch {
@@ -164,6 +162,7 @@ export default function SlidePuzzlePage() {
 
       if (isSolved(newBoard)) {
         setPhase('win');
+        setShowWinBadge(true);
         playWin();
       }
     },
@@ -204,6 +203,7 @@ export default function SlidePuzzlePage() {
           setTimeout(() => {
             setSolving(false);
             setPhase('win');
+            setShowWinBadge(true);
             playWin();
           }, 300);
         }
@@ -224,8 +224,8 @@ export default function SlidePuzzlePage() {
 
   // Submit score on win
   useEffect(() => {
-    if (phase !== 'win' || scoreSubmitted || !selected || autoSolved) return;
-    setScoreSubmitted(true);
+    if (phase !== 'win' || scoreSubmittedRef.current || !selected || autoSolved) return;
+    scoreSubmittedRef.current = true;
     const score = calcScore(moves, gridSize);
     api
       .submitScore({
@@ -237,14 +237,17 @@ export default function SlidePuzzlePage() {
       .catch(() => {
         // Non-critical
       });
-  }, [phase, scoreSubmitted, selected, moves, gridSize, autoSolved]);
+  }, [phase, selected, moves, gridSize, autoSolved]);
+
+  // Submission is guarded by a ref; the saved-score message mirrors that guard.
+  const scoreSubmitted = phase === 'win' && !!selected && !autoSolved;
 
   // Play again: same image, re-shuffle
   const playAgain = useCallback(() => {
     if (solveTimerRef.current) { clearInterval(solveTimerRef.current); solveTimerRef.current = null; }
     setBoard(generateBoard(gridSize));
     setMoves(0);
-    setScoreSubmitted(false);
+    scoreSubmittedRef.current = false;
     setShowHint(false);
     setSolving(false);
     setAutoSolved(false);
@@ -259,7 +262,7 @@ export default function SlidePuzzlePage() {
     setImageDataUri('');
     setBoard([]);
     setMoves(0);
-    setScoreSubmitted(false);
+    scoreSubmittedRef.current = false;
     setShowHint(false);
     setSolving(false);
     setAutoSolved(false);

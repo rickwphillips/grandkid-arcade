@@ -27,6 +27,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const savedMode = localStorage.getItem('themeMode') as ThemeMode | null;
     if (savedMode) {
+      // Post-hydration read of localStorage/matchMedia; the mounted gate below depends on it.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMode(savedMode);
     } else {
       // Check system preference

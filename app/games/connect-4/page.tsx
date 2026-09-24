@@ -41,7 +41,7 @@ export default function Connect4Page() {
   const [moves, setMoves] = useState(0);
   const [winner, setWinner] = useState<'red' | 'yellow' | 'draw' | null>(null);
   const [winCells, setWinCells] = useState<[number, number][]>([]);
-  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const scoreSubmittedRef = useRef(false);
   const [aiThinking, setAiThinking] = useState(false);
   const [lastDrop, setLastDrop] = useState<{ row: number; col: number } | null>(null);
   const [showWinBadge, setShowWinBadge] = useState(false);
@@ -72,7 +72,7 @@ export default function Connect4Page() {
     setMoves(0);
     setWinner(null);
     setWinCells([]);
-    setScoreSubmitted(false);
+    scoreSubmittedRef.current = false;
     setAiThinking(false);
     setLastDrop(null);
     setPhase('play');
@@ -152,9 +152,9 @@ export default function Connect4Page() {
 
   // Submit score when grandkid beats AI
   useEffect(() => {
-    if (phase !== 'done' || scoreSubmitted || !selected) return;
+    if (phase !== 'done' || scoreSubmittedRef.current || !selected) return;
     if (gameMode !== 'ai' || winner !== 'red') return;
-    setScoreSubmitted(true);
+    scoreSubmittedRef.current = true;
     api
       .submitScore({
         grandkid_id: selected.id,
@@ -165,7 +165,10 @@ export default function Connect4Page() {
       .catch(() => {
         // Non-critical
       });
-  }, [phase, scoreSubmitted, selected, gameMode, winner, moves]);
+  }, [phase, selected, gameMode, winner, moves]);
+
+  // Submission is guarded by a ref; the saved-score message mirrors that guard.
+  const scoreSubmitted = phase === 'done' && !!selected && gameMode === 'ai' && winner === 'red';
 
   const playAgain = useCallback(() => {
     setBoard(createBoard());
@@ -173,7 +176,7 @@ export default function Connect4Page() {
     setMoves(0);
     setWinner(null);
     setWinCells([]);
-    setScoreSubmitted(false);
+    scoreSubmittedRef.current = false;
     setAiThinking(false);
     setLastDrop(null);
     setShowWinBadge(false);
@@ -189,7 +192,7 @@ export default function Connect4Page() {
     setMoves(0);
     setWinner(null);
     setWinCells([]);
-    setScoreSubmitted(false);
+    scoreSubmittedRef.current = false;
     setAiThinking(false);
     setLastDrop(null);
     setShowWinBadge(false);

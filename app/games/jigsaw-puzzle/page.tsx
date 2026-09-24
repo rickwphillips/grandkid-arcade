@@ -58,14 +58,18 @@ export default function JigsawPuzzlePage() {
   const [imageDataUri, setImageDataUri] = useState<string>('');
   const [starting, setStarting] = useState(false);
   const [showWinBadge, setShowWinBadge] = useState(false);
-  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const scoreSubmittedRef = useRef(false);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hbCanvasRef = useRef<any>(null);
 
-  useEffect(() => {
+  // Default difficulty follows the selected grandkid's age (adjusted during
+  // render when the selection changes, rather than in an effect)
+  const [prevSelected, setPrevSelected] = useState<typeof selected>(null);
+  if (selected !== prevSelected) {
+    setPrevSelected(selected);
     if (selected) setDifficulty(defaultDifficultyForAge(selected.age));
-  }, [selected]);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -249,8 +253,8 @@ export default function JigsawPuzzlePage() {
   }, [phase, imageDataUri, difficulty]);
 
   useEffect(() => {
-    if (phase !== 'win' || scoreSubmitted || !selected) return;
-    setScoreSubmitted(true);
+    if (phase !== 'win' || scoreSubmittedRef.current || !selected) return;
+    scoreSubmittedRef.current = true;
     api
       .submitScore({
         grandkid_id: selected.id,
@@ -259,7 +263,10 @@ export default function JigsawPuzzlePage() {
         completed: true,
       })
       .catch(() => {});
-  }, [phase, scoreSubmitted, selected]);
+  }, [phase, selected]);
+
+  // Submission is guarded by a ref; the saved-score message mirrors that guard.
+  const scoreSubmitted = phase === 'win' && !!selected;
 
   const handleStart = useCallback(async () => {
     if (!selectedImageId) return;
@@ -267,7 +274,7 @@ export default function JigsawPuzzlePage() {
     try {
       const imgData = await api.getPuzzleImage(selectedImageId);
       setImageDataUri(imgData.image_data);
-      setScoreSubmitted(false);
+      scoreSubmittedRef.current = false;
       setShowWinBadge(false);
       setPhase('play');
     } catch {
@@ -279,7 +286,7 @@ export default function JigsawPuzzlePage() {
 
   const playAgain = useCallback(() => {
     setShowWinBadge(false);
-    setScoreSubmitted(false);
+    scoreSubmittedRef.current = false;
     setPhase('play');
   }, []);
 
@@ -287,7 +294,7 @@ export default function JigsawPuzzlePage() {
     setPhase('select');
     setImageDataUri('');
     setShowWinBadge(false);
-    setScoreSubmitted(false);
+    scoreSubmittedRef.current = false;
   }, []);
 
   // --- Selection phase ---

@@ -89,6 +89,8 @@ export function AuthGuard({ children }: { children: ReactNode }) {
       return;
     }
 
+    // Auth result comes from URL/localStorage/history side effects above, which must run in an effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUser(tokenUser);
     setChecking(false);
   }, []);
