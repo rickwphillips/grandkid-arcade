@@ -145,7 +145,7 @@ export default function JigsawPuzzlePage() {
       const hbPieces: any[] = (canvas as any).puzzle?.pieces ?? [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const nodeToHbPiece = new Map<any, any>();
-      hbPieces.forEach((piece: any) => {
+      hbPieces.forEach((piece) => {
         if (piece.shape) nodeToHbPiece.set(piece.shape, piece);
       });
 
@@ -175,7 +175,7 @@ export default function JigsawPuzzlePage() {
 
           // Compute composite bounding box per cluster.
           const groupBoxes = new Map<number, { x1: number; y1: number; x2: number; y2: number }>();
-          nodes.forEach((node: any, i: number) => {
+          nodes.forEach((node, i: number) => {
             const root = find(i);
             const box  = node.getClientRect();
             const prev = groupBoxes.get(root);
@@ -201,7 +201,7 @@ export default function JigsawPuzzlePage() {
           });
 
           let needsDraw = false;
-          nodes.forEach((node: any, i: number) => {
+          nodes.forEach((node, i: number) => {
             const delta = groupDeltas.get(find(i));
             if (!delta) return;
             const hbPiece = nodeToHbPiece.get(node);
