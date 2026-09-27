@@ -135,3 +135,18 @@ function getIntParam($key) {
     }
     return (int) $value;
 }
+
+// The same idea as getIntParam(), for an integer field arriving in a JSON body.
+//
+// json_decode() can hand back ints, floats, strings, bools, arrays or null, and
+// a bare (int) cast flattens all of them without a diagnostic: (int) ["x"] is 1,
+// so a malformed body writes a real row instead of being rejected. is_numeric()
+// is the same guard grandkids.php already applies to age, and it rejects arrays,
+// bools and non-numeric strings while accepting every real caller, which sends a
+// JSON number (see SubmitScoreInput/ToggleFavoriteInput in app/lib/types.ts).
+function getIntField($input, $key) {
+    if (!isset($input[$key]) || !is_numeric($input[$key])) {
+        sendError("Invalid $key", 400);
+    }
+    return (int) $input[$key];
+}
