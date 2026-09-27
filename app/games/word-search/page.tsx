@@ -279,7 +279,11 @@ export default function WordSearchPage() {
               >
                 <CardActionArea disabled={loading}>
                   <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                    <Typography sx={{ fontSize: '2.5rem', lineHeight: 1, mb: 1 }}>
+                    {/* Decorative, as in GameCard: CardActionArea has no
+                        aria-label, so its accessible name is built from this
+                        content and the emoji is read out ahead of the theme
+                        title it already illustrates. */}
+                    <Typography aria-hidden="true" sx={{ fontSize: '2.5rem', lineHeight: 1, mb: 1 }}>
                       {theme.emoji}
                     </Typography>
                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
