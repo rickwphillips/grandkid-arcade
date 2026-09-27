@@ -50,13 +50,20 @@ switch ($_SERVER['REQUEST_METHOD']) {
             sendError('Invalid game_slug', 400);
         }
 
+        // completed is typed boolean in app/lib/api.ts and json_decode hands that
+        // over as a PHP bool, which is_numeric() rejects, so allow bools here
+        // explicitly rather than routing it through getIntField().
+        if (isset($input['completed']) && !is_bool($input['completed']) && !is_numeric($input['completed'])) {
+            sendError('Invalid completed', 400);
+        }
+
         $stmt = $db->prepare(
             'INSERT INTO game_plays (grandkid_id, game_slug, score, completed) VALUES (?, ?, ?, ?)'
         );
         $stmt->execute([
-            (int) $input['grandkid_id'],
+            getIntField($input, 'grandkid_id'),
             $input['game_slug'],
-            (int) $input['score'],
+            getIntField($input, 'score'),
             (int) ($input['completed'] ?? 0),
         ]);
 

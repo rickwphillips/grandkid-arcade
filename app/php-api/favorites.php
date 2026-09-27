@@ -20,7 +20,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (empty($input['grandkid_id'])) sendError('grandkid_id is required');
         if (empty($input['game_slug'])) sendError('game_slug is required');
 
-        $grandkidId = (int) $input['grandkid_id'];
+        $grandkidId = getIntField($input, 'grandkid_id');
         $gameSlug = $input['game_slug'];
 
         if (!in_array($gameSlug, VALID_GAME_SLUGS, true)) {
