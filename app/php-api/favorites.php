@@ -10,7 +10,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (!isset($_GET['grandkid_id'])) sendError('grandkid_id is required');
 
         $stmt = $db->prepare('SELECT * FROM favorites WHERE grandkid_id = ? ORDER BY created_at DESC');
-        $stmt->execute([(int) $_GET['grandkid_id']]);
+        $stmt->execute([getIntParam('grandkid_id')]);
         sendJSON($stmt->fetchAll());
         break;
 
@@ -20,11 +20,10 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (empty($input['grandkid_id'])) sendError('grandkid_id is required');
         if (empty($input['game_slug'])) sendError('game_slug is required');
 
-        $grandkidId = (int) $input['grandkid_id'];
+        $grandkidId = getIntField($input, 'grandkid_id');
         $gameSlug = $input['game_slug'];
 
-        $validSlugs = ['color-match', 'slide-puzzle', 'connect-4', 'hangman', 'word-search', 'jigsaw-puzzle', 'math-flash-cards', 'simon-says', 'whack-a-mole'];
-        if (!in_array($gameSlug, $validSlugs, true)) {
+        if (!in_array($gameSlug, VALID_GAME_SLUGS, true)) {
             sendError('Invalid game_slug');
         }
 

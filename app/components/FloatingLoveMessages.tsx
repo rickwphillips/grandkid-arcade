@@ -165,9 +165,13 @@ export function FloatingLoveMessages({ name, active }: FloatingLoveMessagesProps
 
   return (
     <Box className={styles.container} sx={{ position: 'absolute', zIndex: 2 }}>
+      {/* Purely ornamental emoji rain — it carries no information, so keep it
+          out of the accessibility tree entirely. The messages below are the
+          content and stay readable. */}
       {decos.map((d) => (
         <Box
           key={d.key}
+          aria-hidden="true"
           className={styles.deco}
           sx={{
             left: d.left,

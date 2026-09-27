@@ -279,7 +279,11 @@ export default function WordSearchPage() {
               >
                 <CardActionArea disabled={loading}>
                   <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                    <Typography sx={{ fontSize: '2.5rem', lineHeight: 1, mb: 1 }}>
+                    {/* Decorative, as in GameCard: CardActionArea has no
+                        aria-label, so its accessible name is built from this
+                        content and the emoji is read out ahead of the theme
+                        title it already illustrates. */}
+                    <Typography aria-hidden="true" sx={{ fontSize: '2.5rem', lineHeight: 1, mb: 1 }}>
                       {theme.emoji}
                     </Typography>
                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
@@ -389,12 +393,17 @@ export default function WordSearchPage() {
                 let onClick: (() => void) | undefined;
                 let label: string = pw.word;
                 let component: 'button' | 'span' = 'span';
+                // Accessible name for the interactive variants. The hard-mode
+                // chip renders as "?????", which gives a screen reader nothing
+                // to announce, so spell out what the button does.
+                let ariaLabel: string | undefined;
 
                 if (isFound) {
                   chipClass += ` ${styles.wordFound}`;
                 } else if (isEasy) {
                   chipClass += ` ${styles.wordItemClickable}`;
                   component = 'button';
+                  ariaLabel = `Highlight the word ${pw.word}`;
                   onClick = () => handleWordListClick(pw.word);
                 } else if (isHard) {
                   if (isRevealed) {
@@ -403,6 +412,7 @@ export default function WordSearchPage() {
                     chipClass += ` ${styles.wordItemHidden}`;
                     label = '?'.repeat(pw.word.length);
                     component = 'button';
+                    ariaLabel = `Reveal hidden word, ${pw.word.length} letters`;
                     onClick = () => handleWordHardReveal(pw.word);
                   }
                 }
@@ -413,6 +423,7 @@ export default function WordSearchPage() {
                     variant="body2"
                     component={component}
                     className={chipClass}
+                    aria-label={ariaLabel}
                     onClick={onClick}
                   >
                     {label}
