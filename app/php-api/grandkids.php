@@ -10,7 +10,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (isset($_GET['id'])) {
             // Get single grandkid
             $stmt = $db->prepare('SELECT * FROM grandkids WHERE id = ?');
-            $stmt->execute([(int) $_GET['id']]);
+            $stmt->execute([getIntParam('id')]);
             $grandkid = $stmt->fetch();
             if (!$grandkid) sendError('Grandkid not found', 404);
             $grandkid['interests'] = json_decode($grandkid['interests'] ?? '[]', true);
@@ -98,7 +98,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
         if (empty($fields)) sendError('No fields to update');
 
-        $values[] = (int) $_GET['id'];
+        $values[] = getIntParam('id');
         $stmt = $db->prepare('UPDATE grandkids SET ' . implode(', ', $fields) . ' WHERE id = ?');
         $stmt->execute($values);
 
@@ -109,7 +109,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         requireAdmin();
         if (!isset($_GET['id'])) sendError('ID is required');
         $stmt = $db->prepare('DELETE FROM grandkids WHERE id = ?');
-        $stmt->execute([(int) $_GET['id']]);
+        $stmt->execute([getIntParam('id')]);
         sendJSON(['success' => true]);
         break;
 

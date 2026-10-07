@@ -12,9 +12,16 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
         if (isset($_GET['grandkid_id'])) {
             $where[] = 'gp.grandkid_id = ?';
-            $params[] = (int) $_GET['grandkid_id'];
+            $params[] = getIntParam('grandkid_id');
         }
         if (isset($_GET['game_slug'])) {
+            // Whitelisted here as well as on POST below. Without it an array
+            // ($_GET['game_slug'][]=x) reaches PDOStatement::execute() and
+            // raises a fatal instead of the JSON error envelope, and any
+            // other unknown string just scans for rows that cannot exist.
+            if (!in_array($_GET['game_slug'], VALID_GAME_SLUGS, true)) {
+                sendError('Invalid game_slug', 400);
+            }
             $where[] = 'gp.game_slug = ?';
             $params[] = $_GET['game_slug'];
         }
@@ -39,18 +46,24 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (empty($input['game_slug'])) sendError('game_slug is required');
         if (!isset($input['score'])) sendError('score is required');
 
-        $knownSlugs = ['color-match', 'slide-puzzle', 'connect-4', 'hangman', 'word-search', 'jigsaw-puzzle', 'math-flash-cards', 'simon-says', 'whack-a-mole'];
-        if (!in_array($input['game_slug'], $knownSlugs, true)) {
+        if (!in_array($input['game_slug'], VALID_GAME_SLUGS, true)) {
             sendError('Invalid game_slug', 400);
+        }
+
+        // completed is typed boolean in app/lib/api.ts and json_decode hands that
+        // over as a PHP bool, which is_numeric() rejects, so allow bools here
+        // explicitly rather than routing it through getIntField().
+        if (isset($input['completed']) && !is_bool($input['completed']) && !is_numeric($input['completed'])) {
+            sendError('Invalid completed', 400);
         }
 
         $stmt = $db->prepare(
             'INSERT INTO game_plays (grandkid_id, game_slug, score, completed) VALUES (?, ?, ?, ?)'
         );
         $stmt->execute([
-            (int) $input['grandkid_id'],
+            getIntField($input, 'grandkid_id'),
             $input['game_slug'],
-            (int) $input['score'],
+            getIntField($input, 'score'),
             (int) ($input['completed'] ?? 0),
         ]);
 

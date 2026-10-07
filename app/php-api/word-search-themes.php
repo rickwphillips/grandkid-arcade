@@ -13,7 +13,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 'SELECT id, title, difficulty, emoji, description, created_at
                  FROM word_search_themes WHERE id = ?'
             );
-            $stmt->execute([(int) $_GET['id']]);
+            $stmt->execute([getIntParam('id')]);
             $theme = $stmt->fetch();
 
             if (!$theme) {
@@ -24,7 +24,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 'SELECT id, theme_id, word, created_at
                  FROM word_search_words WHERE theme_id = ? ORDER BY word'
             );
-            $stmt->execute([(int) $_GET['id']]);
+            $stmt->execute([getIntParam('id')]);
             $theme['words'] = $stmt->fetchAll();
             $theme['word_count'] = count($theme['words']);
 
@@ -49,7 +49,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
         if (isset($_GET['id']) && isset($_GET['words'])) {
             // Add a word to an existing theme
-            $themeId = (int) $_GET['id'];
+            $themeId = getIntParam('id');
 
             $stmt = $db->prepare('SELECT id FROM word_search_themes WHERE id = ?');
             $stmt->execute([$themeId]);
@@ -59,6 +59,10 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
             $input = getJSONInput();
             if (empty($input['word'])) sendError('word is required');
+            // is_string before trim(): PHP 8 throws an uncaught TypeError on
+            // array input, which escapes as a fatal 500 instead of the JSON
+            // error envelope every other guard here returns.
+            if (!is_string($input['word'])) sendError('word must be a string');
 
             $word = strtoupper(trim($input['word']));
             // Match the generator's constraints (gameLogic.ts): it only places
@@ -85,6 +89,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
         // Create a new theme
         $input = getJSONInput();
         if (empty($input['title'])) sendError('title is required');
+        // Same TypeError guard as the add-a-word branch above, for each of the
+        // three free-text fields that reach trim()/mb_strlen().
+        if (!is_string($input['title'])) sendError('title must be a string');
+        if (isset($input['emoji']) && !is_string($input['emoji'])) sendError('emoji must be a string');
+        if (isset($input['description']) && !is_string($input['description'])) sendError('description must be a string');
 
         $title = trim($input['title']);
         $difficulty = $input['difficulty'] ?? 'easy';
@@ -120,7 +129,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (isset($_GET['word_id'])) {
             // Delete a single word
             $stmt = $db->prepare('DELETE FROM word_search_words WHERE id = ?');
-            $stmt->execute([(int) $_GET['word_id']]);
+            $stmt->execute([getIntParam('word_id')]);
 
             if ($stmt->rowCount() === 0) {
                 sendError('Word not found', 404);
@@ -132,7 +141,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
         // Delete theme (cascades to words)
         $stmt = $db->prepare('DELETE FROM word_search_themes WHERE id = ?');
-        $stmt->execute([(int) $_GET['id']]);
+        $stmt->execute([getIntParam('id')]);
 
         if ($stmt->rowCount() === 0) {
             sendError('Theme not found', 404);
