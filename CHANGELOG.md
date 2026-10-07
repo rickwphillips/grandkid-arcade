@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.13.3] - 2026-10-07
+
+### Security
+- **Next.js 16.3.8** — fixes CVE-2026-94483 (SSRF) and CVE-2026-94484/5/6 (cache poisoning, dev-server MCP endpoint)
+- **Dependency CVEs patched** — source-map-js 1.2.2 (GHSA-68fv-2mgg-jv7q), brace-expansion DoS (scoped to minimatch@3.x), js-yaml, sharp, browserslist, @humanfs/node, nanoid, undici, esbuild, vitest
+- **PHP API hardening** — grandkid writes gated behind admin, hangman answer key gated, consolidated input validation across endpoints
+- Lockfile regenerated so dependency overrides actually resolve; CI now verifies resolved versions match package.json
+
+### Fixed
+- Simon Says false game over; Whack-a-Mole stale-timer kill; Jigsaw progress loss on theme toggle
+- Whack-a-Mole updaters and Word Search word placement hardened
+- Keyboard/ARIA support for Simon Says and Math Flash Cards; a11y and strict difficulty whitelists on admin and grandkid pages
+
+### Changed
+- Removed all lint suppressions and explicit `any`; resolved react-hooks/set-state-in-effect errors (shared auth store, external-store theme)
+- Added CI (lint, build, test, PHP syntax guard), Dependabot grouped updates, and expanded test coverage
+
 ## [1.13.2] - 2026-03-11
 ### Added
 - **Game Card Icons** — custom transparent PNG icons for all 7 games (Picture Matcher, Slide Puzzle, Connect 4, Hangman, Word Search, Math Flash Cards, Simon Says)
