@@ -18,6 +18,18 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.13.3',
+    date: '2026-10-07',
+    title: 'Security & Hardening',
+    changes: [
+      { icon: '🔒', text: 'Upgraded Next.js to 16.3.8, fixing CVE-2026-94483 (SSRF) and CVE-2026-94484/5/6' },
+      { icon: '🛡️', text: 'Patched dependency vulnerabilities including source-map-js, brace-expansion, js-yaml, sharp, and undici' },
+      { icon: '🔐', text: 'Grandkid writes now require admin; PHP input validation hardened and the hangman answer key gated' },
+      { icon: '🐛', text: 'Fixed a Simon Says false game over, a Whack-a-Mole stale timer, and Jigsaw progress loss when toggling theme' },
+      { icon: '♿', text: 'Added keyboard and screen-reader support to Simon Says and Math Flash Cards' },
+    ],
+  },
+  {
     version: '1.13.2',
     date: '2026-03-11',
     title: 'Game Card Icons',
