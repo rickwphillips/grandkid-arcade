@@ -54,13 +54,18 @@ export async function apiFetch<T>(
     url = `${API_BASE}${clean}.php`;
   }
 
+  // `...options` has to come first. Spread last it overwrites the whole merged
+  // headers object whenever a caller passes `headers`, dropping Content-Type and
+  // the Authorization bearer with it, and the `...options?.headers` line below
+  // would never merge anything. No caller passes headers today, so this is
+  // ordering only - every current request sends the same headers as before.
   const res = await fetch(url, {
+    ...options,
     headers: {
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
       ...options?.headers,
     },
-    ...options,
   });
 
   if (res.status === 401) {
