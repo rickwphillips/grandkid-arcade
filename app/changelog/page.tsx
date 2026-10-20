@@ -18,6 +18,14 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
   {
+    version: '1.13.4',
+    date: '2026-10-20',
+    title: 'Security Update',
+    changes: [
+      { icon: '🔒', text: 'Upgraded Next.js to 16.4.2, fixing a critical remote-code-execution flaw in the image optimizer (CVE-2026-96889), a cached-data disclosure, a Server Actions denial of service, and a catch-all route auth bypass' },
+    ],
+  },
+  {
     version: '1.13.3',
     date: '2026-10-07',
     title: 'Security & Hardening',
