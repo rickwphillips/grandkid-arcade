@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.13.4] - 2026-10-20
+
+### Security
+- **Next.js 16.4.2** — fixes CVE-2026-96889 (critical RCE in the image optimizer), GHSA-673q-mjm6-r5xr (cached-data disclosure), GHSA-p3m5-59mp-jv5r (Server Actions DoS), CVE-2026-94543 and CVE-2026-94484 (catch-all route auth bypass)
+
 ## [1.13.3] - 2026-10-07
 
 ### Security

@@ -1,6 +1,6 @@
 {
   "name": "grandkid-arcade",
-  "version": "1.13.3",
+  "version": "1.13.4",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3002",
@@ -21,7 +21,7 @@
     "@mui/icons-material": "^7.3.7",
     "@mui/material": "^7.3.7",
     "headbreaker": "^3.0.0",
-    "next": "^16.3.8",
+    "next": "16.4.2",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "sass": "^1.97.3"
@@ -36,7 +36,7 @@
     "@vitejs/plugin-react": "^5.1.4",
     "@vitest/coverage-v8": "^4.1.0",
     "eslint": "^9",
-    "eslint-config-next": "16.3.8",
+    "eslint-config-next": "16.4.2",
     "eslint-config-prettier": "^10.1.8",
     "jsdom": "^28.1.0",
     "prettier": "^3.8.1",
@@ -46,7 +46,8 @@
   "overrides": {
     "postcss": "^8.5.10",
     "js-yaml": ">=4.3.2",
-    "sharp": ">=0.35.4",
+    "sharp": ">=0.35.5",
+    "vite": ">=8.3.5",
     "minimatch@3.1.5": {
       "brace-expansion": "^1.1.12"
     }
