@@ -41,6 +41,28 @@ describe('apiFetch', () => {
     expect(options.headers['Authorization']).toBeUndefined();
   });
 
+  it('keeps Authorization and Content-Type when a caller passes its own headers', async () => {
+    localStorage.setItem(AUTH_TOKEN_KEY, 'test-token');
+    const fetchMock = mockFetch(200, { data: 'ok' });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await apiFetch('grandkids', { headers: { 'X-Trace': 'abc' } });
+    const [, options] = fetchMock.mock.calls[0];
+    expect(options.headers['Authorization']).toBe('Bearer test-token');
+    expect(options.headers['Content-Type']).toBe('application/json');
+    expect(options.headers['X-Trace']).toBe('abc');
+  });
+
+  it('still forwards method and body from options', async () => {
+    const fetchMock = mockFetch(200, { data: 'ok' });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await apiFetch('grandkids', { method: 'POST', body: '{"a":1}' });
+    const [, options] = fetchMock.mock.calls[0];
+    expect(options.method).toBe('POST');
+    expect(options.body).toBe('{"a":1}');
+  });
+
   it('throws on non-ok response (500)', async () => {
     vi.stubGlobal('fetch', mockFetch(500, { error: 'Server error' }));
     await expect(apiFetch('grandkids')).rejects.toThrow('Server error');

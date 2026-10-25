@@ -51,6 +51,15 @@ const VALID_GAME_SLUGS = [
     'whack-a-mole',
 ];
 
+// Bounds of a signed MySQL INT, the column type behind every integer these
+// endpoints write (grandkids.id, game_plays.grandkid_id/score, favorites.*).
+// Checked in PHP so an out-of-range value returns the usual JSON 400 instead of
+// reaching execute(), where MySQL strict mode raises error 1264 ("Out of range
+// value"). Nothing here wraps execute() in a try/catch and getDB() only catches
+// the connection, so that PDOException escapes as an uncaught fatal 500.
+const DB_INT_MIN = -2147483648;
+const DB_INT_MAX = 2147483647;
+
 // Dynamic CORS - check origin against allowed list
 $allowedOrigins = array_map('trim', explode(',', ALLOWED_ORIGINS));
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -133,6 +142,13 @@ function getIntParam($key) {
     if (!is_string($value) || !preg_match('/^-?\d+$/', $value)) {
         sendError("Invalid $key", 400);
     }
+    // Compared before the cast: a 30-digit string satisfies the regex above, but
+    // (int) saturates it to PHP_INT_MAX, so the range test has to read the
+    // original digits. The unary + yields a float for oversized digit strings,
+    // which still compares exactly at this magnitude.
+    if (+$value < DB_INT_MIN || +$value > DB_INT_MAX) {
+        sendError("Invalid $key", 400);
+    }
     return (int) $value;
 }
 
@@ -146,6 +162,10 @@ function getIntParam($key) {
 // JSON number (see SubmitScoreInput/ToggleFavoriteInput in app/lib/types.ts).
 function getIntField($input, $key) {
     if (!isset($input[$key]) || !is_numeric($input[$key])) {
+        sendError("Invalid $key", 400);
+    }
+    // Same reason as getIntParam(): bound the value before (int) collapses it.
+    if (+$input[$key] < DB_INT_MIN || +$input[$key] > DB_INT_MAX) {
         sendError("Invalid $key", 400);
     }
     return (int) $input[$key];
