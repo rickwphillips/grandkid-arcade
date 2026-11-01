@@ -110,5 +110,9 @@ export function consumeUrlToken(): void {
 
 export function redirectToLogin(opts: { logout?: boolean } = {}): void {
   const redirect = encodeURIComponent(window.location.href);
+  // A full page navigation is required, not router.push(): LOGIN_URL is the
+  // portfolio site's shared login route, which is not part of this static
+  // export's router, so Next cannot navigate to it client-side.
+  // eslint-disable-next-line @next/next/no-location-assign-relative-destination
   window.location.href = `${LOGIN_URL}?${opts.logout ? 'logout=1&' : ''}redirect=${redirect}`;
 }
