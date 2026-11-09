@@ -64,7 +64,12 @@ switch ($_SERVER['REQUEST_METHOD']) {
             getIntField($input, 'grandkid_id'),
             $input['game_slug'],
             getIntField($input, 'score'),
-            (int) ($input['completed'] ?? 0),
+            // Normalised to 0/1 rather than cast straight through: the column is
+            // TINYINT(1) holding a flag that is typed boolean in app/lib/api.ts,
+            // and a bare (int) passed anything is_numeric() allowed (e.g. 999)
+            // on to MySQL, which rejects it as out of range for TINYINT and
+            // raises the same uncaught-PDOException 500 described in config.php.
+            !empty($input['completed']) ? 1 : 0,
         ]);
 
         $id = $db->lastInsertId();
