@@ -208,7 +208,7 @@ export default function WordSearchPage() {
         }, 300);
       }
     },
-    [phase, grid, currentTheme, foundWords, foundCells, gridFoundCount],
+    [phase, grid, currentTheme, foundWords, foundCells, gridFoundCount, earnedPoints],
   );
 
   // Submit score when done
